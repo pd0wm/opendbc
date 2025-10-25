@@ -1,0 +1,147 @@
+BO_ 3 acclerations: 17 XXX
+ SG_ like_acceleration1 : 32|12@1+ (1,0) [0|31] "" XXX
+ SG_ like_acceleration2 : 68|12@1+ (1,0) [0|15] "" XXX
+
+BO_ 25 wheel_odo: 17 XXX
+ SG_ NEW_SIGNAL_1 M : 0|1@1+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_2 m0 : 16|4@1+ (1,0) [0|15] "" XXX
+ SG_ wheel_odo1 m0 : 24|16@1+ (1,0) [0|255] "" XXX
+ SG_ wheel_odo2 m0 : 48|16@1+ (1,0) [0|511] "" XXX
+ SG_ wheel_odo3 m0 : 64|16@1+ (1,0) [0|511] "" XXX
+ SG_ wheel_odo4 m0 : 88|16@1+ (1,0) [0|511] "" XXX
+
+BO_ 27 maybe_brake_pressure: 17 XXX
+ SG_ NEW_SIGNAL_2 M : 0|1@1+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_1 m0 : 24|16@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 m0 : 40|16@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_4 m0 : 56|16@1+ (1,0) [0|511] "" XXX
+ SG_ NEW_SIGNAL_5 m0 : 72|16@1+ (1,0) [0|511] "" XXX
+ SG_ NEW_SIGNAL_6 m0 : 120|4@1+ (1,0) [0|15] "" XXX
+
+BO_ 32 NEW_MSG_20: 17 XXX
+ SG_ NEW_SIGNAL_1 M : 0|1@1+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_2 m0 : 24|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 m0 : 32|8@1+ (1,0) [0|7] "" XXX
+ SG_ NEW_SIGNAL_4 m0 : 40|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 35 NEW_MSG_23: 17 XXX
+
+BO_ 38 NEW_MSG_26: 17 XXX
+ SG_ NEW_SIGNAL_2 M : 0|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 m0 : 24|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 39 NEW_MSG_27: 17 XXX
+
+BO_ 40 maybe_gear_switch: 17 XXX
+ SG_ cycle_count M : 0|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_2 m1 : 40|4@1+ (1,0) [0|255] "" XXX
+ SG_ GEAR m3 : 24|4@1+ (1,0) [0|255] "" XXX
+ SG_ P_locked m3 : 49|1@1+ (1,0) [0|15] "" XXX
+
+BO_ 46 wheel_speed: 17 XXX
+ SG_ RL : 24|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
+ SG_ RR : 40|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
+ SG_ FL : 56|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
+ SG_ FR : 72|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
+
+BO_ 49 steer_torque: 17 XXX
+ SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ driver_steer_torque m0 : 24|12@1+ (0.005,-10) [0|4095] "" XXX
+
+BO_ 51 EPS_Angle: 17 XXX
+ SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ steering_angle m0 : 24|16@1+ (0.0439453125,-1440) [0|65535] "" XXX
+
+BO_ 53 NEW_MSG_35: 17 XXX
+ SG_ NEW_SIGNAL_1 M : 2|3@0+ (1,0) [0|2047] "" XXX
+
+BO_ 55 vehicle_speed: 17 XXX
+ SG_ cycle_count M : 0|2@1+ (1,0) [0|3] "" XXX
+ SG_ acceleration m0 : 24|16@1+ (0.002,-65) [0|65535] "" XXX
+ SG_ veh_speed m3 : 24|16@1+ (0.015625,0) [0|65535] "" XXX
+ SG_ driving_status m3 : 44|2@1+ (1,0) [0|7] "" XXX
+
+BO_ 56 NEW_MSG_38: 17 XXX
+ SG_ cycle_count M : 0|1@0+ (1,0) [0|3] "" XXX
+ SG_ yaw m0 : 24|16@1+ (0.005,-164) [0|255] "" XXX
+ SG_ maybe_yaw m0 : 40|16@1+ (0.005,-164) [0|65535] "" XXX
+
+BO_ 58 NEW_MSG_3A: 17 SAS
+ SG_ cycle_count M : 1|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_4 m2 : 96|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 m3 : 52|4@1+ (1,0) [0|255] "" XXX
+
+BO_ 63 seems_all_counters: 17 XXX
+ SG_ NEW_SIGNAL_2 M : 0|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 m3 : 60|4@1+ (1,0) [0|15] "" XXX
+
+BO_ 68 target_steering_torque: 17 XXX
+ SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
+ SG_ target_steering_torque m0 : 88|12@1+ (0.005,-10) [0|4095] "" XXX
+
+BO_ 71 NEW_MSG_47: 17 XXX
+
+BO_ 72 ACC: 17 SAS
+ SG_ cycle_count M : 1|2@0+ (1,0) [0|63] "" XXX
+ SG_ crc1 m1 : 8|8@1+ (1,0) [0|255] "" XXX
+ SG_ cnt1 m1 : 16|4@1+ (1,0) [0|255] "" XXX
+ SG_ always_0x9 m1 : 20|4@1+ (1,0) [0|15] "" XXX
+ SG_ steering_angle_req m1 : 24|16@1+ (0.04,-1000) [0|31] "" XXX
+ SG_ steer_torque_req m1 : 40|16@1+ (0.006,-196.596) [0|255] "" XXX
+ SG_ TJA_ready m1 : 56|8@1+ (1,0) [0|255] "" XXX
+ SG_ assist_mode m1 : 64|2@1+ (1,0) [0|1] "" XXX
+ SG_ wayback_en1_lane_keeping_trigger m1 : 71|6@0+ (1,0) [0|1] "" XXX
+ SG_ lane_keeping_triggered m1 : 72|8@1+ (1,0) [0|255] "" XXX
+ SG_ like_assist_torque_reserve m1 : 80|8@1+ (1,0) [0|255] "" XXX
+ SG_ constants m1 : 88|26@1+ (1,0) [0|131071] "" XXX
+ SG_ wayback_en_2 m1 : 114|2@1+ (1,0) [0|1] "" XXX
+ SG_ steering_engaged m1 : 116|4@1+ (1,0) [0|255] "" XXX
+ SG_ maybe_assist_force_enhance m1 : 120|8@1+ (1,0) [0|255] "" XXX
+ SG_ maybe_assist_force_weaken m1 : 128|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 86 NEW_MSG_56: 17 XXX
+ SG_ NEW_SIGNAL_1 : 32|2@1+ (1,0) [0|3] "" XXX
+
+BO_ 92 NEW_MSG_5C: 9 XXX
+ SG_ NEW_SIGNAL_3 M : 1|2@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_1 m0 : 23|4@0+ (1,0) [0|1] "" XXX
+ SG_ NEW_SIGNAL_2 m1 : 16|4@1+ (1,0) [0|15] "" XXX
+
+BO_ 93 NEW_MSG_5D: 9 XXX
+ SG_ NEW_SIGNAL_2 M : 0|2@1+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 m1 : 44|4@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 m1 : 50|6@1+ (1,0) [0|3] "" XXX
+
+BO_ 97 NEW_MSG_61: 9 XXX
+ SG_ NEW_SIGNAL_2 M : 1|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 m1 : 23|4@0+ (1,0) [0|15] "" XXX
+
+BO_ 98 NEW_MSG_62: 17 XXX
+
+BO_ 100 NEW_MSG_64: 9 XXX
+ SG_ NEW_SIGNAL_1 M : 1|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_2 m3 : 23|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 117 NEW_MSG_75: 9 XXX
+ SG_ NEW_SIGNAL_1 M : 0|1@0+ (1,0) [0|3] "" XXX
+ SG_ engine_start m0 : 24|4@1+ (1,0) [0|15] "" XXX
+
+BO_ 119 NEW_MSG_77: 9 XXX
+
+BO_ 232 NEW_MSG_E8: 9 XXX
+ SG_ cycle_count M : 1|2@0+ (1,0) [0|3] "" XXX
+ SG_ NEW_SIGNAL_1 m2 : 19|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 275 NEW_MSG_113: 9 XXX
+ SG_ NEW_SIGNAL_1 M : 2|3@0+ (1,0) [0|7] "" XXX
+
+CM_ BO_ 72 "m0 are status
+m1 are steering control";
+CM_ SG_ 72 maybe_assist_force_enhance "<30 assist force increase";
+CM_ SG_ 72 maybe_assist_force_weaken ">74, decrease assist force";
+VAL_ 40 GEAR 2 "P or N" 4 "D" 5 "R";
+VAL_ 40 P_locked 1 "locked" 0 "released";
+VAL_ 55 driving_status 0 "stop" 1 "forward" 2 "reverse" 3 "moving";
+VAL_ 72 assist_mode 0 "disable steering" 1 "enable steering assistant";
+VAL_ 72 like_assist_torque_reserve 2 "steer engaged" 0 "disengaged" 3 "wayback mode" 1 "engaging";
+VAL_ 117 engine_start 0 "stop" 1 "starting" 2 "running" 3 "off";
