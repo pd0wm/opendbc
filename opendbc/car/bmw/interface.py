@@ -30,11 +30,13 @@ class CarInterface(CarInterfaceBase):
     ret.radarUnavailable = True
 
     # Basic PID for angle; tune later
-    ret.lateralTuning.pid.kpBP = [0.]
-    ret.lateralTuning.pid.kiBP = [0.]
-    ret.lateralTuning.pid.kf = 0.00006
-    ret.lateralTuning.pid.kpV = [0.6]
-    ret.lateralTuning.pid.kiV = [0.2]
+    # Reduce aggressive turn-in and high-speed oscillation
+    # Gains taper with speed; slightly higher actuator delay for angle path
+    ret.lateralTuning.pid.kf = 0.00005
+    ret.lateralTuning.pid.kpBP = [0., 10., 20., 35.]
+    ret.lateralTuning.pid.kpV  = [0.45, 0.40, 0.35, 0.30]
+    ret.lateralTuning.pid.kiBP = [0., 10., 20., 35.]
+    ret.lateralTuning.pid.kiV  = [0.12, 0.10, 0.08, 0.06]
     return ret
 
   @staticmethod

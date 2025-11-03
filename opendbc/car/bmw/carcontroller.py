@@ -1,6 +1,9 @@
 from opendbc.can import CANPacker
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car import Bus
+from opendbc.car.lateral import apply_steer_angle_limits_vm
+from opendbc.car.vehicle_model import VehicleModel
+from opendbc.car.bmw.values import CarControllerParams
 
 
 class CarController(CarControllerBase):
@@ -10,6 +13,9 @@ class CarController(CarControllerBase):
     self.packer = CANPacker(dbc_names[Bus.main])
     self.cnt = 0
     self.cycle = 0
+    self.apply_angle_last = 0.0
+    # Vehicle model for angle limiting (use BMW CP)
+    self.VM = VehicleModel(CP)
 
   def _acc_cnt(self):
     self.cnt = (self.cnt + 1) % 16
@@ -34,6 +40,11 @@ class CarController(CarControllerBase):
 
     lat_active = bool(CC.latActive)
     desired_angle = float(actuators.steeringAngleDeg)
+
+    # Vehicle model-based angle limiting (jerk/accel and EPS constraints)
+    desired_angle = apply_steer_angle_limits_vm(desired_angle, self.apply_angle_last, CS.out.vEgoRaw, CS.out.steeringAngleDeg,
+                                                lat_active, CarControllerParams, self.VM)
+    self.apply_angle_last = desired_angle
 
     if self.frame % 2 == 0:
       # Full ACC payload with defaults
