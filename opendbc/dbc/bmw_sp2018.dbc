@@ -50,7 +50,7 @@ BO_ 49 steer_torque: 17 XXX
 
 BO_ 51 EPS_Angle: 17 XXX
  SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
- SG_ steering_angle m0 : 24|16@1+ (0.0439453125,-1440) [0|65535] "" XXX
+ SG_ steering_angle m0 : 24|16@1+ (0.054931640625,-1800) [0|65535] "" XXX
 
 BO_ 53 NEW_MSG_35: 17 XXX
  SG_ NEW_SIGNAL_1 M : 2|3@0+ (1,0) [0|2047] "" XXX
