@@ -17,11 +17,6 @@ class CarState(CarStateBase):
     cp_main.dbc.name_to_msg["EPS_Angle"].ignore_checksum = True
     cp_main.dbc.name_to_msg["vehicle_speed"].ignore_counter = True
     cp_main.dbc.name_to_msg["EPS_Angle"].ignore_counter = True
-    # Yaw and driver torque parsing; ignore checks for now
-    cp_main.dbc.name_to_msg["NEW_MSG_38"].ignore_checksum = True
-    cp_main.dbc.name_to_msg["NEW_MSG_38"].ignore_counter = True
-    cp_main.dbc.name_to_msg["steer_torque"].ignore_checksum = True
-    cp_main.dbc.name_to_msg["steer_torque"].ignore_counter = True
     # Gear switch parsing uses cycle base 3; ignore checks
     cp_main.dbc.name_to_msg["maybe_gear_switch"].ignore_checksum = True
     cp_main.dbc.name_to_msg["maybe_gear_switch"].ignore_counter = True
@@ -107,20 +102,4 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = bool(int(acc_assist_mode)) if acc_found else bool(prev.cruiseState.enabled)
     ret.cruiseState.available = True
 
-    # Yaw rate (deg/s -> rad/s), demux cycle base 0
-    yaw_found, yaw_deg_s = self._demux_last(cp, "NEW_MSG_38", "cycle_count", "yaw", cycle_base=0)
-    if yaw_found:
-      ret.yawRate = float(yaw_deg_s) * CV.DEG_TO_RAD
-    else:
-      ret.yawRate = float(prev.yawRate)
-
-    # Driver steering torque (native units from CAN)
-    steering_torque_found, steering_torque = self._demux_last(cp, "steer_torque", "cycle_count", "driver_steer_torque", cycle_base=0)
-    if steering_torque_found:
-      ret.steeringTorque = float(steering_torque)
-    else:
-      ret.steeringTorque = float(prev.steeringTorque)
-
     return ret, ret_sp
-
-
