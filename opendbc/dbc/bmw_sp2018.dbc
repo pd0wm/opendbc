@@ -40,12 +40,6 @@ BO_ 51 EPS_Angle: 17 XXX
  SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
  SG_ steering_angle m0 : 24|16@1+ (0.054931640625,-1800) [0|65535] "" XXX
 
-BO_ 55 vehicle_speed: 17 XXX
- SG_ cycle_count M : 0|2@1+ (1,0) [0|3] "" XXX
- SG_ acceleration m0 : 24|16@1+ (0.002,-65) [0|65535] "" XXX
- SG_ veh_speed m3 : 24|16@1+ (0.015625,0) [0|65535] "" XXX
- SG_ driving_status m3 : 44|2@1+ (1,0) [0|7] "" XXX
-
 BO_ 56 yaw: 17 XXX
  SG_ cycle_count M : 0|1@0+ (1,0) [0|3] "" XXX
  SG_ yaw m0 : 24|16@1+ (0.005,-164) [0|255] "" XXX
@@ -127,10 +121,15 @@ BO_ 13056 STEERING_WHEEL_3: 17 XXX
  SG_ CYCLE_COUNT : 7|8@0+ (1,0) [0|255] "" XXX
  SG_ CHECKSUM : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 19|4@0+ (1,0) [0|15] "" XXX
- SG_ STEERING_ANGLE_1 : 24|16@1+ (1,-32768) [0|65535] "" XXX
+ SG_ STEERING_ANGLE_1 : 24|16@1+ (0.054931640625,-1800) [0|65535] "" XXX
  SG_ STEERING_TORQUE : 88|12@1+ (1,-1000) [0|4095] "" XXX
 
-BO_ 14851 NEW_MSG_3A03: 17 XXX
+BO_ 14080 SPEED: 17 XXX
+ SG_ CYCLE_COUNT : 0|8@1+ (1,0) [0|3] "" XXX
+ SG_ VEHICLE_SPEED : 24|16@1+ (0.015625,0) [0|65535] "" XXX
+ SG_ DRIVING_STATUS : 44|2@1+ (1,0) [0|7] "" XXX
+
+BO_ 14851 CRUISE_STATE: 17 XXX
  SG_ CYCLE_COUNT : 7|8@0+ (1,0) [0|255] "" XXX
  SG_ CHECKSUM : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 19|4@0+ (1,0) [0|15] "" XXX
@@ -174,6 +173,5 @@ BO_ 18433 STEER_REQUEST: 17 SAS
 CM_ SG_ 12033 BRAKE_RESSED_1 "This seems to be the most sensitive brake pressed singal";
 VAL_ 40 GEAR 2 "P or N" 4 "D" 5 "R";
 VAL_ 40 P_locked 1 "locked" 0 "released";
-VAL_ 55 driving_status 0 "stop" 1 "forward" 2 "reverse" 3 "moving";
 VAL_ 117 engine_start 0 "stop" 1 "starting" 2 "running" 3 "off";
-VAL_ 10243 GEAR 2 "N_P" 4 "D" 5 "REVERSE";
+VAL_ 10243 GEAR 2 "N" 4 "D" 5 "R";
