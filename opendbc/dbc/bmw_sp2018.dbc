@@ -26,11 +26,18 @@ BO_ 40 maybe_gear_switch: 17 XXX
  SG_ GEAR m3 : 24|4@1+ (1,0) [0|255] "" XXX
  SG_ P_locked m3 : 49|1@1+ (1,0) [0|15] "" XXX
 
-BO_ 46 wheel_speed: 17 XXX
- SG_ RL : 24|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
- SG_ RR : 40|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
- SG_ FL : 56|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
- SG_ FR : 72|16@1+ (0.015625,-511.984375) [0|65535] "" XXX
+BO_ 46 WHEEL_SPEEDS: 17 XXX
+ SG_ CYCLE_COUNT : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ CHECKSUM : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ COUNTER : 19|4@0+ (1,0) [0|15] "" XXX
+ SG_ RL : 24|16@1+ (0.005,-163.84) [0|65535] "m/s" XXX
+ SG_ RR : 40|16@1+ (0.005,-163.84) [0|65535] "m/s" XXX
+ SG_ FL : 56|16@1+ (0.005,-163.84) [0|65535] "m/s" XXX
+ SG_ FR : 72|16@1+ (0.005,-163.84) [0|65535] "m/s" XXX
+ SG_ RR_STATE : 91|4@0+ (1,0) [0|15] "" XXX
+ SG_ FL_STATE : 95|4@0+ (1,0) [0|15] "" XXX
+ SG_ FR_STATE : 99|4@0+ (1,0) [0|15] "" XXX
+ SG_ RL_STATE : 103|4@0+ (1,0) [0|15] "" XXX
 
 BO_ 49 steer_torque: 17 XXX
  SG_ cycle_count M : 0|1@0+ (1,0) [0|1] "" XXX
@@ -139,7 +146,7 @@ BO_ 13056 STEERING_WHEEL_3: 17 XXX
  SG_ CYCLE_COUNT : 7|8@0+ (1,0) [0|255] "" XXX
  SG_ CHECKSUM : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 19|4@0+ (1,0) [0|15] "" XXX
- SG_ STEERING_ANGLE_1 : 24|16@1+ (0.054931640625,-1800) [0|65535] "" XXX
+ SG_ STEERING_ANGLE_1 : 24|16@1+ (1,-32768) [0|65535] "" XXX
  SG_ STEERING_TORQUE : 88|12@1+ (1,-1000) [0|4095] "" XXX
 
 BO_ 14080 SPEED: 17 XXX

@@ -17,15 +17,15 @@ class CarState(CarStateBase):
   def get_can_parsers(CP, CP_SP):
     # External panda is index 1 -> buses 4-7. Use bus 4 for main traffic.
     cp_main = CANParser("bmw_sp2018", [
-       ("wheel_speed", float("nan")),
+       ("WHEEL_SPEEDS", float("nan")),
        ("GEARBOX_2", float("nan")),
        ("STEERING_WHEEL_3", float("nan")),
        ("BRAKE_PEDAL_3", float("nan")),
       ], bus=4)
 
     # One-time DBC config; avoid doing this in the control loop
-    cp_main.dbc.name_to_msg["wheel_speed"].ignore_checksum = True
-    cp_main.dbc.name_to_msg["wheel_speed"].ignore_counter = True
+    cp_main.dbc.name_to_msg["WHEEL_SPEEDS"].ignore_checksum = True
+    cp_main.dbc.name_to_msg["WHEEL_SPEEDS"].ignore_counter = True
 
     cp_main.dbc.name_to_msg["GEARBOX_2"].ignore_checksum = True
     cp_main.dbc.name_to_msg["GEARBOX_2"].ignore_counter = True
@@ -54,7 +54,7 @@ class CarState(CarStateBase):
     ret = structs.CarState()
     ret_sp = structs.CarStateSP()
 
-    self.parse_wheel_speeds(ret, cp.vl["wheel_speed"]["FL"], cp.vl["wheel_speed"]["FR"], cp.vl["wheel_speed"]["RL"], cp.vl["wheel_speed"]["RR"])
+    self.parse_wheel_speeds(ret, cp.vl["WHEEL_SPEEDS"]["FL"], cp.vl["WHEEL_SPEEDS"]["FR"], cp.vl["WHEEL_SPEEDS"]["RL"], cp.vl["WHEEL_SPEEDS"]["RR"], unit=1)
     ret.standstill = ret.vEgoRaw < 0.01
 
     ret.steeringAngleDeg = float(cp.vl["STEERING_WHEEL_3"]["STEERING_ANGLE_1"])
