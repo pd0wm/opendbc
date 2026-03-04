@@ -19,7 +19,7 @@ class CarState(CarStateBase):
     cp_main = CANParser("bmw_sp2018", [
        ("WHEEL_SPEEDS", float("nan")),
        ("GEARBOX_2", float("nan")),
-       ("STEERING_WHEEL_2", float("nan")),
+       ("STEERING_WHEEL_3", float("nan")),
        ("BRAKE_PEDAL_3", float("nan")),
       ], bus=4)
 
@@ -30,8 +30,8 @@ class CarState(CarStateBase):
     cp_main.dbc.name_to_msg["GEARBOX_2"].ignore_checksum = True
     cp_main.dbc.name_to_msg["GEARBOX_2"].ignore_counter = True
 
-    cp_main.dbc.name_to_msg["STEERING_WHEEL_2"].ignore_checksum = True
-    cp_main.dbc.name_to_msg["STEERING_WHEEL_2"].ignore_counter = True
+    cp_main.dbc.name_to_msg["STEERING_WHEEL_3"].ignore_checksum = True
+    cp_main.dbc.name_to_msg["STEERING_WHEEL_3"].ignore_counter = True
 
 
     cp_main.dbc.name_to_msg["BRAKE_PEDAL_3"].ignore_checksum = True
@@ -57,7 +57,7 @@ class CarState(CarStateBase):
     self.parse_wheel_speeds(ret, cp.vl["WHEEL_SPEEDS"]["FL"], cp.vl["WHEEL_SPEEDS"]["FR"], cp.vl["WHEEL_SPEEDS"]["RL"], cp.vl["WHEEL_SPEEDS"]["RR"], unit=1)
     ret.standstill = ret.vEgoRaw < 0.01
 
-    ret.steeringAngleDeg = float(cp.vl["STEERING_WHEEL_2"]["STEERING_ANGLE_1"])
+    ret.steeringAngleDeg = float(cp.vl["STEERING_WHEEL_3"]["STEERING_ANGLE"])
 
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(cp.vl["GEARBOX_2"]["GEAR"], None))
     if (ret.gearShifter == GearShifter.neutral) and bool(cp.vl["GEARBOX_2"]["PARK_LOCKED"]):
