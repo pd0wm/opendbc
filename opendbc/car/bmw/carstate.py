@@ -1,6 +1,5 @@
 from opendbc.can import CANDefine, CANParser
 from opendbc.car import Bus, structs
-from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 
 GearShifter = structs.CarState.GearShifter
@@ -54,7 +53,7 @@ class CarState(CarStateBase):
     ret = structs.CarState()
     ret_sp = structs.CarStateSP()
 
-    self.parse_wheel_speeds(ret, cp.vl["WHEEL_SPEEDS"]["FL"], cp.vl["WHEEL_SPEEDS"]["FR"], cp.vl["WHEEL_SPEEDS"]["RL"], cp.vl["WHEEL_SPEEDS"]["RR"], unit=1)
+    self.parse_wheel_speeds(ret, cp.vl["WHEEL_SPEEDS"]["FL"], cp.vl["WHEEL_SPEEDS"]["FR"], cp.vl["WHEEL_SPEEDS"]["RL"], cp.vl["WHEEL_SPEEDS"]["RR"])
     ret.standstill = ret.vEgoRaw < 0.01
 
     ret.steeringAngleDeg = float(cp.vl["STEERING_WHEEL_2"]["STEERING_ANGLE_1"])
