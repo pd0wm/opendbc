@@ -229,17 +229,33 @@ BO_ 17408 EPS_CONTROL: 17 XXX
  SG_ CYCLE_COUNT : 7|8@0+ (1,0) [0|255] "" XXX
  SG_ CHECKSUM_1 : 15|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_1 : 19|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0xF_1 : 23|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0xD0 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0xE7 : 39|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_2 : 47|8@0+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_1 : 55|8@0+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_7 : 58|3@0+ (1,0) [0|7] "" XXX
- SG_ NEW_SIGNAL_6 : 69|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_1 : 48|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_7 : 59|4@0+ (1,0) [0|7] "" XXX
+ SG_ TORQUE_MODE : 67|4@0+ (1,0) [0|15] "" XXX
+ SG_ TORQUE_REQUEST_1 : 68|1@0+ (1,0) [0|1] "" XXX
  SG_ CHECKSUM_2 : 79|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_2 : 83|4@0+ (1,0) [0|15] "" XXX
- SG_ LANE_KEEP_TORQUE : 88|12@1+ (1,-2000) [0|4095] "" XXX
- SG_ NEW_SIGNAL_3 : 103|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_5 : 125|2@0+ (1,0) [0|3] "" XXX
- SG_ LkaSubState : 131|4@0+ (1,0) [0|15] "" XXX
- SG_ LkaReqActive : 132|1@0+ (1,0) [0|1] "" XXX
+ SG_ SET_ME_0xF_2 : 87|4@0+ (1,0) [0|15] "" XXX
+ SG_ TORQUE : 88|12@1+ (0.005,-10) [0|4095] "Nm" XXX
+ SG_ TORQUE_MODE_CPY : 103|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0xFF_1 : 111|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0xFF_2 : 119|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0xF_3 : 123|4@0+ (1,0) [0|15] "" XXX
+ SG_ TORQUE_REQUEST_2 : 125|2@0+ (1,0) [0|3] "" XXX
+ SG_ LKA_STATE : 131|4@0+ (1,0) [0|255] "" XXX
+ SG_ TORQUE_REQUEST_3 : 132|1@0+ (1,0) [0|1] "" XXX
+
+BO_ 17409 NEW_MSG_4401: 17 XXX
+ SG_ CYCLE_COUNT : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_1 : 63|4@0+ (1,0) [0|15] "" XXX
+ SG_ NEW_SIGNAL_2 : 71|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 17410 NEW_MSG_4402: 17 XXX
+ SG_ NEW_SIGNAL_1 : 135|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 17664 NEW_MSG_4500: 17 XXX
  SG_ NEW_SIGNAL_3 : 24|16@1+ (1,-32768) [0|65535] "" XXX
@@ -294,9 +310,16 @@ BO_ 61953 BLINKER_STATE: 3 XXX
  SG_ RIGHT : 13|1@0+ (1,0) [0|1] "" XXX
 
 CM_ SG_ 12033 BRAKE_RESSED_1 "This seems to be the most sensitive brake pressed singal";
+CM_ SG_ 17408 NEW_SIGNAL_2 "0 when active, 0xFE most of the time otherwise";
+CM_ SG_ 17408 NEW_SIGNAL_1 "0xFE most of the time";
+CM_ SG_ 17408 TORQUE_MODE "2 when active, msotly 14 otherise";
+CM_ SG_ 17408 TORQUE_MODE_CPY "mirror of TORQUE_MODE";
+CM_ SG_ 17408 LKA_STATE "Ramp from 0-14 on engage/disengage. 5-9 otherwise";
+CM_ SG_ 17408 TORQUE_REQUEST_3 "Only 1 while not ramping up/down";
 CM_ SG_ 23809 SET_SPEED "Signal seems to glitch sometimes";
 VAL_ 117 engine_start 0 "stop" 1 "starting" 2 "running" 3 "off";
 VAL_ 494 STALK_RIGHT 0 "NONE" 1 "HALF" 2 "FULL";
 VAL_ 494 STALK_LEFT 0 "NONE" 1 "HALF" 2 "FULL";
 VAL_ 10243 GEAR 2 "N" 4 "D" 5 "R";
+VAL_ 17408 TORQUE_REQUEST_2 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 59649 CRUISE_SPEED 0 "NONE" 1 "UP_1" 2 "UP_10" 5 "DOWN_1" 6 "DOWN_10";
