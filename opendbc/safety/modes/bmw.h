@@ -43,7 +43,10 @@ static safety_config bmw_init(uint16_t param) {
               .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},
   };
 
-  return BUILD_SAFETY_CFG(bmw_rx_checks, BMW_TX_MSGS);
+  safety_config ret = BUILD_SAFETY_CFG(bmw_rx_checks, BMW_TX_MSGS);
+  // Single-bus bridge setup with no camera: disable the default bus 0<->2 relay forwarding.
+  ret.disable_forwarding = true;
+  return ret;
 }
 
 const safety_hooks bmw_hooks = {
