@@ -30,6 +30,19 @@ STEER_DEFAULTS = {
   "SET_ME_0xFA": 0xFA,
 }
 
+# Overrides applied when lateral isn't active. We keep streaming the frame every
+# valid cycle (like the stock steering module, which sends slot 0x48 at 50 Hz
+# regardless of engagement) but disable the request: ACTIVE=INACTIVE and the whole
+# assist command zeroed. Matches the stock inactive frame observed on the FlexRay
+# bridge RX side (CAN 0x481) in route 0fb664817c575e13/00000007--4b23439cf5.
+STEER_DISABLED = {
+  "ACTIVE": 1,  # INACTIVE
+  "ASSIST_MODE": 0,
+  "ASSIST_TORQUE": 0,
+  "SET_ME_0xA2": 0,
+  "SET_ME_0xFA": 0,
+}
+
 
 def next_trigger_cycles(cur: int, n: int) -> list[int]:
   """The next `n` future FlexRay cycles (wrapping) where cycle % 4 == 1."""
@@ -51,9 +64,15 @@ class CarController(CarControllerBase):
     self.apply_angle_last = 0.0
     self.VM = VehicleModel(CP)
 
-  def create_steer_request(self, apply_angle: float, cycle: int):
+  def create_steer_request(self, apply_angle: float, cycle: int, lat_active: bool):
     values = dict(STEER_DEFAULTS)
-    values["STEER_ANGLE_REQUEST"] = apply_angle
+    if not lat_active:
+      values.update(STEER_DISABLED)
+    # While disabled, send a zero angle to match the stock inactive frame exactly.
+    # TODO: once panda-side angle safety is in place, send the measured angle here
+    # instead (smooth handoff) and test that the EPS does not fault when sending a
+    # non-zero angle when inactive.
+    values["STEER_ANGLE_REQUEST"] = apply_angle if lat_active else 0.0
     values["CYCLE_COUNT"] = cycle & 0x3F
     # 4-bit rolling counter, one step per valid (cycle % 4 == 1) instance
     values["COUNTER"] = (cycle >> 2) & 0xF
@@ -76,9 +95,10 @@ class CarController(CarControllerBase):
 
     # Queue the next few valid FlexRay cycles with the freshest angle. The bridge
     # injects each frame on its tagged cycle and overwrites still-pending payloads.
-    if CC.latActive:
-      for cycle in next_trigger_cycles(CS.cycle, CarControllerParams.STEER_LOOKAHEAD):
-        can_sends.append(self.create_steer_request(apply_angle, cycle))
+    # We always stream the frame (like the stock module); when lateral isn't active
+    # the request is disabled inside the message (ACTIVE=INACTIVE, assist zeroed).
+    for cycle in next_trigger_cycles(CS.cycle, CarControllerParams.STEER_LOOKAHEAD):
+      can_sends.append(self.create_steer_request(apply_angle, cycle, CC.latActive))
 
     self.frame += 1
     new_actuators = actuators.as_builder()
