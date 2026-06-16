@@ -6,7 +6,7 @@ from opendbc.car.lateral import apply_steer_angle_limits_vm
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.bmw.values import (CarControllerParams, BMW_FLEXRAY_CYCLES, BMW_STEER_CYCLE_MOD,
                                     BMW_STEER_CYCLE_REM, BMW_FLEXRAY_WORDS, BMW_STEER_CRC_INIT,
-                                    BMW_STEER_LEN, BMW_BUS)
+                                    BMW_STEER_LEN, BMW_BUS, BMW_STEER_COUNTER_MOD)
 
 # Constant filler that makes the EPS treat the frame as an active steering request.
 # Everything except the angle, rolling counter, FlexRay cycle and checksum is fixed.
@@ -56,6 +56,16 @@ def next_trigger_cycles(cur: int, n: int) -> list[int]:
   return out
 
 
+def steer_cycles_between(prev: int, cur: int) -> int:
+  """Number of steering cycles (cycle % 4 == 1) in (prev, cur], wrapping mod 64.
+
+  Used to advance the free-running rolling counter by exactly one per steering
+  cycle the bus has passed, independent of how many control frames ran.
+  """
+  delta = (cur - prev) % BMW_FLEXRAY_CYCLES
+  return sum((prev + k) % BMW_STEER_CYCLE_MOD == BMW_STEER_CYCLE_REM for k in range(1, delta + 1))
+
+
 class CarController(CarControllerBase):
   def __init__(self, dbc_names, CP):
     super().__init__(dbc_names, CP)
@@ -63,8 +73,12 @@ class CarController(CarControllerBase):
     self.crc = mk_crc8_fun(CRC8J1850, init_crc=BMW_STEER_CRC_INIT)
     self.apply_angle_last = 0.0
     self.VM = VehicleModel(CP)
+    # Free-running rolling counter (mod 15), advanced one step per steering cycle
+    # the bus passes. last_cycle is the FlexRay cycle it was last advanced to.
+    self.steer_counter = 0
+    self.last_cycle: int | None = None
 
-  def create_steer_request(self, apply_angle: float, cycle: int, lat_active: bool):
+  def create_steer_request(self, apply_angle: float, cycle: int, counter: int, lat_active: bool):
     values = dict(STEER_DEFAULTS)
     if not lat_active:
       values.update(STEER_DISABLED)
@@ -74,8 +88,7 @@ class CarController(CarControllerBase):
     # non-zero angle when inactive.
     values["STEER_ANGLE_REQUEST"] = apply_angle if lat_active else 0.0
     values["CYCLE_COUNT"] = cycle & 0x3F
-    # 4-bit rolling counter, one step per valid (cycle % 4 == 1) instance
-    values["COUNTER"] = (cycle >> 2) & 0xF
+    values["COUNTER"] = counter
 
     addr, dat, bus = self.packer.make_can_msg("STEER_REQUEST", BMW_BUS, values)
     dat = bytearray(dat)
@@ -93,12 +106,25 @@ class CarController(CarControllerBase):
                                               CS.out.steeringAngleDeg, CC.latActive, CarControllerParams, self.VM)
     self.apply_angle_last = apply_angle
 
+    # Advance the free-running rolling counter to the current bus cycle: +1 per
+    # steering cycle passed since we last ran (usually 0-1 at 100 Hz vs the 50 Hz
+    # steering cadence). steer_counter is now the value for the most recent
+    # steering cycle <= CS.cycle; the i-th look-ahead cycle is i+1 steps later.
+    if self.last_cycle is not None:
+      self.steer_counter = (self.steer_counter + steer_cycles_between(self.last_cycle, CS.cycle)) % BMW_STEER_COUNTER_MOD
+    self.last_cycle = CS.cycle
+
     # Queue the next few valid FlexRay cycles with the freshest angle. The bridge
     # injects each frame on its tagged cycle and overwrites still-pending payloads.
+    # Each target cycle gets its own counter (consecutive, mod 15) so the injected
+    # stream the EPS sees increments by exactly one every steering cycle. Re-queues
+    # of the same target carry the same counter: as CS.cycle advances one step,
+    # steer_counter +1 and the target's look-ahead index -1 cancel out.
     # We always stream the frame (like the stock module); when lateral isn't active
     # the request is disabled inside the message (ACTIVE=INACTIVE, assist zeroed).
-    for cycle in next_trigger_cycles(CS.cycle, CarControllerParams.STEER_LOOKAHEAD):
-      can_sends.append(self.create_steer_request(apply_angle, cycle, CC.latActive))
+    for i, cycle in enumerate(next_trigger_cycles(CS.cycle, CarControllerParams.STEER_LOOKAHEAD)):
+      counter = (self.steer_counter + i + 1) % BMW_STEER_COUNTER_MOD
+      can_sends.append(self.create_steer_request(apply_angle, cycle, counter, CC.latActive))
 
     self.frame += 1
     new_actuators = actuators.as_builder()

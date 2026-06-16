@@ -22,6 +22,16 @@ BMW_STEER_LEN = 20
 # The CAN<->FlexRay bridge is on bus 0 for both RX and TX.
 BMW_BUS = 0
 
+# COUNTER on slot 0x48 is a free-running rolling counter, +1 per steering cycle,
+# modulo 15 (values 0..14 — the stock module never emits 15). It is NOT derived
+# from the FlexRay cycle: there are 16 steering cycles (cycle % 4 == 1) per
+# 64-cycle round but only 15 counter values, so a cycle-locked counter would
+# repeat a value once per round (a stuck step the EPS rejects). The host keeps
+# its own monotonic steering-cycle index and sends index % 15; absolute phase
+# vs the stock counter does not matter because we inject every cycle, so the EPS
+# only ever sees our (consistently incrementing) stream.
+BMW_STEER_COUNTER_MOD = 15
+
 
 @dataclass(frozen=True, kw_only=True)
 class BMWCarSpecs(CarSpecs):
