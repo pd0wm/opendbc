@@ -17,26 +17,6 @@ BO_ 0 BRIDGE_STATS: 48 XXX
  SG_ RING_OVERRUN : 247|16@0+ (1,0) [0|65535] "" XXX
  SG_ CAN_INIT : 263|16@0+ (1,0) [0|65535] "" XXX
 
-BO_ 72 STEER_REQUEST: 20 SAS
- SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
- SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
- SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
- SG_ SET_ME_0x9 : 31|4@0+ (1,0) [0|15] "" XXX
- SG_ STEER_ANGLE_REQUEST : 32|16@1+ (0.04395,-1098.75) [0|65535] "" XXX
- SG_ STEER_TORQUE_REQUEST : 48|16@1+ (0.006,-196.596) [0|65535] "" XXX
- SG_ ASSIST_MODE : 73|2@0+ (1,0) [0|3] "" XXX
- SG_ REVERSING_ASSIST : 78|5@0+ (1,0) [0|31] "" XXX
- SG_ ASSIST_TORQUE : 95|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0xFE : 103|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0x17 : 111|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0xFF : 119|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0x3 : 120|2@1+ (1,0) [0|3] "" XXX
- SG_ ACTIVE : 124|4@1+ (1,0) [0|15] "" XXX
- SG_ SET_ME_0xA2 : 135|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0xFA : 143|8@0+ (1,0) [0|255] "" XXX
-
 BO_ 400 WHEEL_ODOMETRY: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
  SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
@@ -296,13 +276,16 @@ BO_ 931 CRUISE_STATE: 20 XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0x2 : 31|4@0+ (1,0) [0|15] "" XXX
  SG_ SET_ME_0xFA : 47|8@0+ (1,0) [0|255] "" XXX
  SG_ ACCELERATION_REQUEST : 48|16@1+ (0.0015,-48) [-48|50.3] "m/s2" XXX
  SG_ CRUISE_ENGAGED_1 : 67|1@0+ (1,0) [0|1] "" XXX
  SG_ CRUISE_ENGAGED_2 : 69|1@0+ (1,0) [0|1] "" XXX
+ SG_ SET_ME_0x1 : 73|1@0+ (1,0) [0|1] "" XXX
  SG_ CRUISE_ENGAGED_3 : 75|2@0+ (1,0) [0|3] "" XXX
  SG_ SET_ME_0xFFFF : 80|16@1+ (1,0) [0|65535] "" XXX
- SG_ NEW_SIGNAL_2 : 96|11@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 96|11@1+ (1,0) [0|2047] "" XXX
+ SG_ SET_ME_0xF : 107|5@1+ (1,0) [0|31] "" XXX
  SG_ SET_ME_0xFFFFFFFF : 112|32@1+ (1,0) [0|4294967295] "" XXX
 
 BO_ 944 STEERING_WHEEL_1: 20 XXX
@@ -385,6 +368,7 @@ BO_ 1152 CRUISE_STATE_2: 20 SAS
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM_1 : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_1 : 27|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0x6 : 31|4@0+ (1,0) [0|15] "" XXX
  SG_ BRAKE_REQUEST : 32|16@1+ (0.0015,-48) [-48|50.3] "m/s2" XXX
  SG_ ACC_ENGAGED : 51|4@0+ (1,0) [0|15] "" XXX
  SG_ BRAKE_MODE : 53|2@0+ (1,0) [0|3] "" XXX
@@ -393,10 +377,11 @@ BO_ 1152 CRUISE_STATE_2: 20 SAS
  SG_ SET_ME_0x20 : 79|8@0+ (1,0) [0|255] "" XXX
  SG_ CHECKSUM_2 : 87|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_2 : 91|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0x1 : 95|4@0+ (1,0) [0|15] "" XXX
  SG_ SET_ME_0xEC : 103|8@0+ (1,0) [0|255] "" XXX
  SG_ SET_ME_0xFFFFFFFF : 119|32@0+ (1,0) [0|4294967295] "" XXX
 
-BO_ 1153 STEER_REQUEST_RX: 20 SAS
+BO_ 1153 STEER_REQUEST: 20 SAS
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
  SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
@@ -470,7 +455,7 @@ CM_ BO_ 931 "CRUISE_STATE: one of the two ACC longitudinal actuation frames (pai
 CM_ BO_ 1152 "CRUISE_STATE_2: the other ACC longitudinal actuation frame. Carries BRAKE_REQUEST, BRAKE_MODE and engaged-status bits. Together 0x3a3+0x480 fully drive ACC accel/regen, friction brakes and standstill hold.";
 CM_ BO_ 929 "NEW_MSG_3A01: companion frame to CRUISE_STATE (multiplexed engaged-status echo: c01300202a03.. engaged vs 001300202603.. disengaged). No accel/brake command; not needed to actuate ACC.";
 CM_ BO_ 930 "NEW_MSG_3A02: companion frame; payload varies independently of ACC engagement (counter/status). Not a longitudinal actuator.";
-CM_ BO_ 1154 "NEW_MSG_4802: companion to STEER_REQUEST_RX (0x481); carries the steering-family constants (fe17ff13..), not longitudinal ACC.";
+CM_ BO_ 1154 "NEW_MSG_4802: companion to STEER_REQUEST (0x481); carries the steering-family constants (fe17ff13..), not longitudinal ACC.";
 CM_ SG_ 931 ACCELERATION_REQUEST "Powertrain (engine/regen) longitudinal accel target. Neutral/0 m/s2 at raw 32000 (empirical zero ~32030); factor 0.0015 m/s2/count fitted vs aEgo in steady cruise/launch (r>0.99). Held at 0 during standstill hold (CRUISE_ENGAGED_3==3). Not the same scaling as KINEMATICS_4.ACCELERATION (0.0025).";
 CM_ SG_ 931 CRUISE_ENGAGED_2 "Pre-enable maybe";
 CM_ SG_ 931 CRUISE_ENGAGED_3 "Inverse of CRUISE_ENGAGED_1, also 3 at standstill. ==3 while engaged is the standstill-HOLD state: ACCELERATION_REQUEST forced 0, CRUISE_STATE_2.BRAKE_MODE==2 and BRAKE_REQUEST clamped to the hold value (raw ~31196, ~-1.2 m/s2). Goes 3->0 on launch/release.";
@@ -486,7 +471,6 @@ CM_ SG_ 1152 BRAKE_MODE "Longitudinal actuator select: 1 = engine/regen only (BR
 CM_ SG_ 1152 ACC_ENGAGED "ACC engaged flag (was SET_ME_0x4): 4 while engaged (CRUISE_STATE.CRUISE_ENGAGED_1==1) in any sub-mode, 0 when not engaged.";
 CM_ SG_ 1152 SET_ME_0xD8 "Not constant: 0xD8 while engaged, 0xC0 (bits 0x18 cleared) when disengaged. Carries engaged status alongside ACC_ENGAGED.";
 CM_ SG_ 1489 SET_SPEED "Signal seems to glitch sometimes";
-VAL_ 72 ACTIVE 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 643 GEAR 2 "N" 4 "D" 5 "R";
 VAL_ 1088 TORQUE_REQUEST_2 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 1152 ACC_ENGAGED 0 "NOT_ENGAGED" 4 "ENGAGED";

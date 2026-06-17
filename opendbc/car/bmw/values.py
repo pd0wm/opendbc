@@ -3,11 +3,13 @@ from dataclasses import dataclass, field
 from opendbc.car import Bus, CarSpecs, DbcDict, PlatformConfig, Platforms
 from opendbc.car.lateral import AngleSteeringLimitsVM
 
-# *** FlexRay steering inject (slot 0x48 == CAN id 72) ***
+# *** FlexRay steering inject ***
 # The car's FlexRay network runs a 64-cycle counter. The steering frame is only
 # present on cycles where cycle % 4 == 1, so we tag each frame with the FlexRay
 # cycle it should be injected on and let the CAN<->FlexRay bridge place it (see
-# CarController).
+# CarController). STEER_REQUEST is packed from its report-address DBC message
+# (0x481) and the outgoing id is rewritten to the bare slot 0x48 (see
+# bmw_inject_slot); the bridge injects on the bare slot.
 BMW_FLEXRAY_CYCLES = 64
 BMW_STEER_CYCLE_MOD = 4
 BMW_STEER_CYCLE_REM = 1
@@ -15,8 +17,8 @@ BMW_STEER_CYCLE_REM = 1
 BMW_FLEXRAY_WORDS = 8
 # BMW EPS payload checksum seed for slot 0x48 (CRC-8/J1850 == opendbc CRC8J1850).
 BMW_STEER_CRC_INIT = 0xD6
-# The STEER_REQUEST DBC message is 18 bytes; sent as CAN-FD it's padded up to the
-# next valid DLC length (20). Must match the safety mode's tx allowlist length.
+# Both inject frames are DLC-padded to 20 bytes as CAN-FD. Must match the safety
+# mode's tx allowlist length.
 BMW_STEER_LEN = 20
 
 # The CAN<->FlexRay bridge is on bus 0 for both RX and TX.
@@ -31,6 +33,23 @@ BMW_BUS = 0
 # vs the stock counter does not matter because we inject every cycle, so the EPS
 # only ever sees our (consistently incrementing) stream.
 BMW_STEER_COUNTER_MOD = 15
+
+
+# *** id-override inject scheme ***
+# A frame is packed from its REPORT-address DBC message (the address the bridge
+# reports the car's frame on) and the outgoing CAN id is then rewritten to the
+# bare FlexRay slot == (report addr >> 4) -- the id the bridge injects on. So
+# there are no separate bare-slot or _RX message copies in the DBC.
+#   STEER_REQUEST  report 0x481 -> slot 0x48 (lateral)
+# The longitudinal ACC frames (CRUISE_STATE 0x3a3, CRUISE_STATE_2 0x480) live in
+# the DBC for decoding but are NOT sent yet -- still bench-testing the raw frames.
+def bmw_inject_slot(report_addr: int) -> int:
+  return report_addr >> 4
+
+
+# Steering checksum covers payload[3:18] (the 16-byte FlexRay payload after the
+# checksum byte) -- NOT the 2 trailing DLC-pad bytes of the 20-byte CAN frame.
+BMW_STEER_CRC_RANGE = (2, 3, 18)  # (checksum_byte, start, end)
 
 
 @dataclass(frozen=True, kw_only=True)

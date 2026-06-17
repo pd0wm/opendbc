@@ -6,7 +6,8 @@ from opendbc.car.lateral import apply_steer_angle_limits_vm
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.bmw.values import (CarControllerParams, BMW_FLEXRAY_CYCLES, BMW_STEER_CYCLE_MOD,
                                     BMW_STEER_CYCLE_REM, BMW_FLEXRAY_WORDS, BMW_STEER_CRC_INIT,
-                                    BMW_STEER_LEN, BMW_BUS, BMW_STEER_COUNTER_MOD)
+                                    BMW_STEER_LEN, BMW_BUS, BMW_STEER_COUNTER_MOD, BMW_STEER_CRC_RANGE,
+                                    bmw_inject_slot)
 
 # Constant filler that makes the EPS treat the frame as an active steering request.
 # Everything except the angle, rolling counter, FlexRay cycle and checksum is fixed.
@@ -73,8 +74,6 @@ class CarController(CarControllerBase):
     self.crc = mk_crc8_fun(CRC8J1850, init_crc=BMW_STEER_CRC_INIT)
     self.apply_angle_last = 0.0
     self.VM = VehicleModel(CP)
-    # Free-running rolling counter (mod 15), advanced one step per steering cycle
-    # the bus passes. last_cycle is the FlexRay cycle it was last advanced to.
     self.steer_counter = 0
     self.last_cycle: int | None = None
 
@@ -82,6 +81,7 @@ class CarController(CarControllerBase):
     values = dict(STEER_DEFAULTS)
     if not lat_active:
       values.update(STEER_DISABLED)
+
     # While disabled, send a zero angle to match the stock inactive frame exactly.
     # TODO: once panda-side angle safety is in place, send the measured angle here
     # instead (smooth handoff) and test that the EPS does not fault when sending a
@@ -92,11 +92,15 @@ class CarController(CarControllerBase):
 
     addr, dat, bus = self.packer.make_can_msg("STEER_REQUEST", BMW_BUS, values)
     dat = bytearray(dat)
-    # CHECKSUM (FlexRay payload byte 0, at byte index 2) = crc8 over the bytes after it
-    dat[2] = self.crc(bytes(dat[3:]))
-    # the 18-byte frame is sent as CAN-FD; pad up to the next valid DLC length (20)
+
+    # TODO: have CANPacker compute the CRC
+    ci, start, end = BMW_STEER_CRC_RANGE
+    dat[ci] = self.crc(bytes(dat[start:end]))
+
+    # sent as CAN-FD; pad up to the valid DLC length (already 20 from the packer)
     dat += bytes(BMW_STEER_LEN - len(dat))
-    return [addr, bytes(dat), bus]
+
+    return [bmw_inject_slot(addr), bytes(dat), bus]
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
