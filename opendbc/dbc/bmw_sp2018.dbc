@@ -297,7 +297,7 @@ BO_ 931 CRUISE_STATE: 20 XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ SET_ME_0xFA : 47|8@0+ (1,0) [0|255] "" XXX
- SG_ ACCELERATION_REQUEST_MAYBE : 48|16@1+ (0.0025,-81.25) [0|65535] "" XXX
+ SG_ ACCELERATION_REQUEST : 48|16@1+ (0.0015,-48) [-48|50.3] "m/s2" XXX
  SG_ CRUISE_ENGAGED_1 : 67|1@0+ (1,0) [0|1] "" XXX
  SG_ CRUISE_ENGAGED_2 : 69|1@0+ (1,0) [0|1] "" XXX
  SG_ CRUISE_ENGAGED_3 : 75|2@0+ (1,0) [0|3] "" XXX
@@ -385,8 +385,8 @@ BO_ 1152 CRUISE_STATE_2: 20 SAS
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM_1 : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_1 : 27|4@0+ (1,0) [0|15] "" XXX
- SG_ BRAKE_REQUEST : 32|16@1+ (1,-32000) [0|65535] "" XXX
- SG_ SET_ME_0x4 : 51|4@0+ (1,0) [0|15] "" XXX
+ SG_ BRAKE_REQUEST : 32|16@1+ (0.0015,-48) [-48|50.3] "m/s2" XXX
+ SG_ ACC_ENGAGED : 51|4@0+ (1,0) [0|15] "" XXX
  SG_ BRAKE_MODE : 53|2@0+ (1,0) [0|3] "" XXX
  SG_ SET_ME_0xD8 : 63|8@0+ (1,0) [0|255] "" XXX
  SG_ SET_ME_0xF0 : 71|8@0+ (1,0) [0|255] "" XXX
@@ -466,8 +466,14 @@ CM_ SG_ 0 DUP_DROPPED "Second-side duplicate captures dropped (each frame is see
 CM_ SG_ 0 RING_OVERRUN "Capture DMA ring lapped a chunk before the parser copied it; chunk discarded";
 CM_ SG_ 0 CAN_INIT "MCP2518FD CAN controller (re)initialisations";
 CM_ SG_ 753 BRAKE_PRESSED_1 "This seems to be the most sensitive brake pressed signal";
+CM_ BO_ 931 "CRUISE_STATE: one of the two ACC longitudinal actuation frames (paired with CRUISE_STATE_2 0x480). Carries ACCELERATION_REQUEST plus engage/standstill state. Observed on bus 0 (src=can).";
+CM_ BO_ 1152 "CRUISE_STATE_2: the other ACC longitudinal actuation frame. Carries BRAKE_REQUEST, BRAKE_MODE and engaged-status bits. Together 0x3a3+0x480 fully drive ACC accel/regen, friction brakes and standstill hold.";
+CM_ BO_ 929 "NEW_MSG_3A01: companion frame to CRUISE_STATE (multiplexed engaged-status echo: c01300202a03.. engaged vs 001300202603.. disengaged). No accel/brake command; not needed to actuate ACC.";
+CM_ BO_ 930 "NEW_MSG_3A02: companion frame; payload varies independently of ACC engagement (counter/status). Not a longitudinal actuator.";
+CM_ BO_ 1154 "NEW_MSG_4802: companion to STEER_REQUEST_RX (0x481); carries the steering-family constants (fe17ff13..), not longitudinal ACC.";
+CM_ SG_ 931 ACCELERATION_REQUEST "Powertrain (engine/regen) longitudinal accel target. Neutral/0 m/s2 at raw 32000 (empirical zero ~32030); factor 0.0015 m/s2/count fitted vs aEgo in steady cruise/launch (r>0.99). Held at 0 during standstill hold (CRUISE_ENGAGED_3==3). Not the same scaling as KINEMATICS_4.ACCELERATION (0.0025).";
 CM_ SG_ 931 CRUISE_ENGAGED_2 "Pre-enable maybe";
-CM_ SG_ 931 CRUISE_ENGAGED_3 "Inverse of CRUISE_ENGAGED_1, also 3 at standstill";
+CM_ SG_ 931 CRUISE_ENGAGED_3 "Inverse of CRUISE_ENGAGED_1, also 3 at standstill. ==3 while engaged is the standstill-HOLD state: ACCELERATION_REQUEST forced 0, CRUISE_STATE_2.BRAKE_MODE==2 and BRAKE_REQUEST clamped to the hold value (raw ~31196, ~-1.2 m/s2). Goes 3->0 on launch/release.";
 CM_ SG_ 931 NEW_SIGNAL_2 "Seems to drop when in turns";
 CM_ SG_ 1088 NEW_SIGNAL_2 "0 when active, 0xFE most of the time otherwise";
 CM_ SG_ 1088 NEW_SIGNAL_1 "0xFE most of the time";
@@ -475,10 +481,15 @@ CM_ SG_ 1088 TORQUE_MODE "2 when active, msotly 14 otherise";
 CM_ SG_ 1088 TORQUE_MODE_CPY "mirror of TORQUE_MODE";
 CM_ SG_ 1088 LKA_STATE "Ramp from 0-14 on engage/disengage. 5-9 otherwise";
 CM_ SG_ 1088 TORQUE_REQUEST_3 "Only 1 while not ramping up/down";
-CM_ SG_ 1152 BRAKE_MODE "Switch from regen to friction brakes maybe";
+CM_ SG_ 1152 BRAKE_REQUEST "Friction-brake deceleration target. Neutral (no brake) at raw 32000; lower raw = harder braking. Encoded like ACCELERATION_REQUEST (factor 0.0015 m/s2/count, offset -48) so it reads in m/s2; only meaningful when BRAKE_MODE==2. Standstill hold sits at raw ~31196 (~-1.2 m/s2). BRAKE_REQUEST and ACCELERATION_REQUEST do NOT add: in BRAKE_MODE==2 the two are a coordinated split of one decel target across two actuators with a speed-dependent cross-fade (regen/ACCELERATION_REQUEST dominant at speed, friction/BRAKE_REQUEST taking over near stop as ACCELERATION_REQUEST fades to 0). Achieved aEgo tracks ~the deeper of the two (the target), not their sum (sum overpredicts ~2.5-3x). To command decel a in the blend region put a in both signals (they are ~equal at the crossover).";
+CM_ SG_ 1152 BRAKE_MODE "Longitudinal actuator select: 1 = engine/regen only (BRAKE_REQUEST neutral at 32000, ACCELERATION_REQUEST carries the command), 2 = friction brakes engaged (hard decel and standstill hold; BRAKE_REQUEST is live).";
+CM_ SG_ 1152 ACC_ENGAGED "ACC engaged flag (was SET_ME_0x4): 4 while engaged (CRUISE_STATE.CRUISE_ENGAGED_1==1) in any sub-mode, 0 when not engaged.";
+CM_ SG_ 1152 SET_ME_0xD8 "Not constant: 0xD8 while engaged, 0xC0 (bits 0x18 cleared) when disengaged. Carries engaged status alongside ACC_ENGAGED.";
 CM_ SG_ 1489 SET_SPEED "Signal seems to glitch sometimes";
 VAL_ 72 ACTIVE 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 643 GEAR 2 "N" 4 "D" 5 "R";
 VAL_ 1088 TORQUE_REQUEST_2 1 "INACTIVE" 2 "ACTIVE";
+VAL_ 1152 ACC_ENGAGED 0 "NOT_ENGAGED" 4 "ENGAGED";
+VAL_ 1152 BRAKE_MODE 1 "REGEN_POWERTRAIN" 2 "FRICTION_BRAKE";
 VAL_ 1153 ACTIVE 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 3729 CRUISE_SPEED 0 "NONE" 1 "UP_1" 2 "UP_10" 5 "DOWN_1" 6 "DOWN_10";
