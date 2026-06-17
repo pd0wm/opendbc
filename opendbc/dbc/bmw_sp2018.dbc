@@ -17,125 +17,29 @@ BO_ 0 BRIDGE_STATS: 48 XXX
  SG_ RING_OVERRUN : 247|16@0+ (1,0) [0|65535] "" XXX
  SG_ CAN_INIT : 263|16@0+ (1,0) [0|65535] "" XXX
 
-BO_ 3 acclerations: 17 XXX
- SG_ like_acceleration1 : 32|12@1+ (1,0) [0|31] "" XXX
- SG_ like_acceleration2 : 68|12@1+ (1,0) [0|15] "" XXX
-
-BO_ 35 NEW_MSG_23: 17 XXX
-
-BO_ 736 WHEEL_SPEEDS: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 72 STEER_REQUEST: 20 SAS
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
- SG_ RL : 32|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
- SG_ RR : 48|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
- SG_ FL : 64|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
- SG_ FR : 80|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
- SG_ RR_STATE : 99|4@0+ (1,0) [0|15] "" XXX
- SG_ FL_STATE : 103|4@0+ (1,0) [0|15] "" XXX
- SG_ FR_STATE : 107|4@0+ (1,0) [0|15] "" XXX
- SG_ RL_STATE : 111|4@0+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0x9 : 31|4@0+ (1,0) [0|15] "" XXX
+ SG_ STEER_ANGLE_REQUEST : 32|16@1+ (0.04395,-1098.75) [0|65535] "" XXX
+ SG_ STEER_TORQUE_REQUEST : 48|16@1+ (0.006,-196.596) [0|65535] "" XXX
+ SG_ ASSIST_MODE : 73|2@0+ (1,0) [0|3] "" XXX
+ SG_ REVERSING_ASSIST : 78|5@0+ (1,0) [0|31] "" XXX
+ SG_ ASSIST_TORQUE : 95|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0xFE : 103|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0x17 : 111|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0xFF : 119|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0x3 : 120|2@1+ (1,0) [0|3] "" XXX
+ SG_ ACTIVE : 124|4@1+ (1,0) [0|15] "" XXX
+ SG_ SET_ME_0xA2 : 135|8@0+ (1,0) [0|255] "" XXX
+ SG_ SET_ME_0xFA : 143|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 86 NEW_MSG_56: 17 XXX
- SG_ NEW_SIGNAL_1 : 32|2@1+ (1,0) [0|3] "" XXX
-
-BO_ 117 NEW_MSG_75: 9 XXX
- SG_ NEW_SIGNAL_1 M : 0|1@0+ (1,0) [0|3] "" XXX
- SG_ engine_start m0 : 24|4@1+ (1,0) [0|15] "" XXX
-
-BO_ 173 NEW_MSG_AD: 8 XXX
- SG_ NEW_SIGNAL_2 : 8|16@1+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_1 : 24|12@1+ (1,0) [0|255] "" XXX
- SG_ CRUISE_ENGAGED : 46|1@0+ (1,0) [0|1] "" XXX
- SG_ COUNTER : 55|4@0+ (1,0) [0|15] "" XXX
- SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
-
-BO_ 174 NEW_MSG_AE: 8 XXX
- SG_ NEW_SIGNAL_1 : 0|16@1+ (1,0) [0|65535] "" XXX
- SG_ COUNTER : 55|4@0+ (1,0) [0|15] "" XXX
- SG_ CHECKSUM : 63|8@0+ (1,0) [0|255] "" XXX
-
-BO_ 225 NEW_MSG_E1: 8 SAS
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
-
-BO_ 239 NEW_MSG_EF: 8 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 16|12@1+ (1,0) [0|1023] "" XXX
- SG_ NEW_SIGNAL_2 : 40|11@1+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_3 : 63|8@0+ (1,0) [0|255] "" XXX
-
-BO_ 315 NEW_MSG_13B: 8 SAS
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
-
-BO_ 341 NEW_MSG_155: 8 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
-
-BO_ 375 NEW_MSG_177: 8 SAS
- SG_ NEW_SIGNAL_1 : 61|2@0+ (1,0) [0|3] "" XXX
-
-BO_ 409 NEW_MSG_199: 6 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 16|16@1+ (1,0) [0|65535] "" XXX
-
-BO_ 410 NEW_MSG_19A: 6 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 16|16@1+ (1,0) [0|65535] "" XXX
-
-BO_ 415 NEW_MSG_19F: 6 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 16|16@1+ (1,0) [0|65535] "" XXX
-
-BO_ 429 NEW_MSG_1AD: 8 SAS
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 17|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_2 : 21|1@0+ (1,0) [0|1] "" XXX
-
-BO_ 494 CAN_BLINKER_STALK: 2 XXX
- SG_ STALK_RIGHT : 1|2@0+ (1,0) [0|3] "" XXX
- SG_ STALK_LEFT : 3|2@0+ (1,0) [0|3] "" XXX
-
-BO_ 502 CAN_BLINKER_STATE: 2 XXX
- SG_ LEFT : 4|1@0+ (1,0) [0|1] "" XXX
- SG_ RIGHT : 5|1@0+ (1,0) [0|1] "" XXX
-
-BO_ 553 NEW_MSG_229: 8 SAS
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
-
-BO_ 630 NEW_MSG_276: 8 SAS
-
-BO_ 769 NEW_MSG_301: 7 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 13|1@0+ (1,0) [0|1] "" XXX
- SG_ NEW_SIGNAL_2 : 16|16@1+ (1,0) [0|65535] "" XXX
-
-BO_ 770 NEW_MSG_302: 7 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
- SG_ NEW_SIGNAL_1 : 16|16@1+ (1,0) [0|65535] "" XXX
-
-BO_ 797 NEW_MSG_31D: 8 SAS
-
-BO_ 855 NEW_MSG_357: 5 SAS
-
-BO_ 886 NEW_MSG_376: 8 XXX
- SG_ CHECKSUM : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 11|4@0+ (1,0) [0|15] "" XXX
-
-BO_ 400 WHEEL_ODOMETRY: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 400 WHEEL_ODOMETRY: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -145,9 +49,9 @@ BO_ 400 WHEEL_ODOMETRY: 18 XXX
  SG_ WHEEL_4 : 96|16@1+ (1,0) [0|65535] "" XXX
  SG_ COUNTER_SOMETHING : 112|16@1+ (1,0) [0|65535] "" XXX
 
-BO_ 432 BRAKES: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 432 BRAKES: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -164,40 +68,40 @@ BO_ 432 BRAKES: 18 XXX
  SG_ NEW_SIGNAL_4 : 127|2@0+ (1,0) [0|3] "" XXX
  SG_ NEW_SIGNAL_6 : 135|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 512 NEW_MSG_2000: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 512 NEW_MSG_2000: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ NEW_SIGNAL_1 : 28|12@1+ (1,0) [0|8191] "" XXX
  SG_ NEW_SIGNAL_2 : 40|12@1+ (1,0) [0|4095] "" XXX
  SG_ NEW_SIGNAL_3 : 52|12@1+ (1,0) [0|8191] "" XXX
 
-BO_ 608 NEW_MSG_2600: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 608 NEW_MSG_2600: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ NEW_SIGNAL_1 : 40|16@1+ (1,0) [0|2047] "" XXX
 
-BO_ 624 STEERING_WHEEL_7: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
- SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
- SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
+BO_ 624 STEERING_WHEEL_7: 20 XXX
  SG_ MULTIPLEXOR M : 16|1@0+ (1,0) [0|1] "" XXX
  SG_ NEW_SIGNAL_1 m0 : 111|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_2 m0 : 119|8@0+ (1,0) [0|255] "" XXX
-
-BO_ 625 STEERING_WHEEL_4: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
+
+BO_ 625 STEERING_WHEEL_4: 20 XXX
+ SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ STEERING_ANGLE : 32|16@1+ (0.04395,-1440.1536) [0|3] "" XXX
  SG_ COUNTER_SOMETHING : 80|12@1+ (1,0) [0|4095] "" XXX
 
-BO_ 641 GEARBOX_1: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 641 GEARBOX_1: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -205,9 +109,9 @@ BO_ 641 GEARBOX_1: 18 XXX
  SG_ COUNTER_SOMETHING : 80|12@1+ (1,0) [0|65535] "" XXX
  SG_ TORQUE_REQUEST_MAYBE : 112|12@1+ (1,0) [0|65535] "" XXX
 
-BO_ 643 GEARBOX_2: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 643 GEARBOX_2: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -215,9 +119,9 @@ BO_ 643 GEARBOX_2: 18 XXX
  SG_ OUTPUT_SPEED : 40|16@1+ (1,-2000) [0|255] "" XXX
  SG_ PARK_LOCKED : 57|1@0+ (1,0) [0|1] "" XXX
 
-BO_ 657 NEW_MSG_2901: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 657 NEW_MSG_2901: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -226,14 +130,14 @@ BO_ 657 NEW_MSG_2901: 18 XXX
  SG_ NEW_SIGNAL_1 : 104|16@1+ (1,-32768) [0|65535] "" XXX
  SG_ NEW_SIGNAL_2 : 128|16@1+ (1,-32768) [0|65535] "" XXX
 
-BO_ 672 NEW_MSG_2A00: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 672 NEW_MSG_2A00: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
 
-BO_ 689 BRAKE_PEDAL_1: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 689 BRAKE_PEDAL_1: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -248,9 +152,9 @@ BO_ 689 BRAKE_PEDAL_1: 18 XXX
  SG_ BRAKE_PEDAL_POSITION_1 : 112|12@1+ (1,0) [0|4095] "" XXX
  SG_ BRAKE_PEDAL_POSITION_2 : 124|12@1+ (1,0) [0|15] "" XXX
 
-BO_ 691 BRAKE_PEDAL_2: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 691 BRAKE_PEDAL_2: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -258,9 +162,24 @@ BO_ 691 BRAKE_PEDAL_2: 18 XXX
  SG_ BRAKE_PEDAL_POSITION_INV_2 : 56|16@1+ (1,0) [0|65535] "" XXX
  SG_ BRAKE_PEDAL_POSITION_3 : 79|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 753 BRAKE_PEDAL_3: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 736 WHEEL_SPEEDS: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
+ SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
+ SG_ RL : 32|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
+ SG_ RR : 48|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
+ SG_ FL : 64|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
+ SG_ FR : 80|16@1+ (0.0198863636363636,-652) [0|65535] "km/h" XXX
+ SG_ RR_STATE : 99|4@0+ (1,0) [0|15] "" XXX
+ SG_ FL_STATE : 103|4@0+ (1,0) [0|15] "" XXX
+ SG_ FR_STATE : 107|4@0+ (1,0) [0|15] "" XXX
+ SG_ RL_STATE : 111|4@0+ (1,0) [0|15] "" XXX
+
+BO_ 753 BRAKE_PEDAL_3: 20 XXX
+ SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -273,9 +192,9 @@ BO_ 753 BRAKE_PEDAL_3: 18 XXX
  SG_ BRAKE_PRESSED_1 : 122|1@0+ (1,0) [0|1] "" XXX
  SG_ BRAKE_PRESSED_4 : 141|1@0+ (1,0) [0|1] "" XXX
 
-BO_ 784 STEERING_WHEEL_5: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 784 STEERING_WHEEL_5: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -284,17 +203,17 @@ BO_ 784 STEERING_WHEEL_5: 18 XXX
  SG_ STEERING_TORQUE_2 : 96|12@1+ (1,-2000) [0|4095] "" XXX
  SG_ NEW_SIGNAL_1 : 115|4@0+ (1,0) [0|15] "" XXX
 
-BO_ 785 STEERING_WHEEL_6: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 785 STEERING_WHEEL_6: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ STEERING_RATE_SOMETHING : 71|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 816 STEERING_WHEEL_3: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 816 STEERING_WHEEL_3: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -304,16 +223,16 @@ BO_ 816 STEERING_WHEEL_3: 18 XXX
  SG_ NEW_SIGNAL_3 : 77|2@0+ (1,0) [0|3] "" XXX
  SG_ STEERING_TORQUE_EPS : 96|12@1+ (1,-1000) [0|4095] "" XXX
 
-BO_ 880 SPEED: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 880 SPEED: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ VEHICLE_SPEED : 32|16@1+ (0.015625,0) [0|65535] "" XXX
  SG_ DRIVING_STATUS : 52|2@1+ (1,0) [0|7] "" XXX
 
-BO_ 897 KINEMATICS_1: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 897 KINEMATICS_1: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -323,57 +242,57 @@ BO_ 897 KINEMATICS_1: 18 XXX
  SG_ COUNTER_SOMETHING : 80|12@1+ (1,0) [0|65535] "" XXX
  SG_ YAW_RATE : 96|16@1+ (1,-32768) [0|65535] "" XXX
 
-BO_ 898 KINEMATICS_2: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 898 KINEMATICS_2: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 87|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 91|4@0+ (1,0) [0|15] "" XXX
  SG_ YAW_RATE : 96|16@1+ (1,-32768) [0|65535] "" XXX
 
-BO_ 913 KINEMATICS_3: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 913 KINEMATICS_3: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ YAW_RATE : 32|16@1+ (1,-32768) [0|65535] "" XXX
 
-BO_ 914 KINEMATICS_4: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 914 KINEMATICS_4: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ ACCELERATION : 32|16@1+ (0.0025,-81.25) [0|65535] "" XXX
  SG_ SPEED : 48|16@1+ (1,0) [0|65535] "" XXX
 
-BO_ 915 KINEMATICS_5: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 915 KINEMATICS_5: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ YAW_RATE : 32|16@1+ (1,-32768) [0|65535] "" XXX
 
-BO_ 929 NEW_MSG_3A01: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
- SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
- SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
+BO_ 929 NEW_MSG_3A01: 20 XXX
  SG_ VALID M : 30|1@0+ (1,0) [0|1] "" XXX
  SG_ COUNTER m1 : 27|4@0+ (1,0) [0|15] "" XXX
+ SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+ SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 930 NEW_MSG_3A02: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 930 NEW_MSG_3A02: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
 
-BO_ 931 CRUISE_STATE: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 931 CRUISE_STATE: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -386,17 +305,17 @@ BO_ 931 CRUISE_STATE: 18 XXX
  SG_ NEW_SIGNAL_2 : 96|11@1+ (1,0) [0|255] "" XXX
  SG_ SET_ME_0xFFFFFFFF : 112|32@1+ (1,0) [0|4294967295] "" XXX
 
-BO_ 944 STEERING_WHEEL_1: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 944 STEERING_WHEEL_1: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ STEERING_ANGLE : 32|16@1+ (0.04395,-1440.1536) [0|65535] "" XXX
 
-BO_ 945 STEERING_WHEEL_2: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 945 STEERING_WHEEL_2: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ STEERING_ANGLE_1 : 24|16@1+ (0.04395,-1098.75) [0|65535] "" XXX
  SG_ STEER_TORQUE_SOMETHING : 40|12@1+ (1,-2046) [0|65535] "" XXX
@@ -405,9 +324,9 @@ BO_ 945 STEERING_WHEEL_2: 18 XXX
  SG_ STEERING_ANGLE_2 : 96|16@1+ (0.04395,-1098.75) [0|65535] "" XXX
  SG_ NEW_SIGNAL_1 : 113|2@0+ (1,0) [0|3] "" XXX
 
-BO_ 1088 EPS_CONTROL: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1088 EPS_CONTROL: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM_1 : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_1 : 27|4@0+ (1,0) [0|15] "" XXX
@@ -431,38 +350,38 @@ BO_ 1088 EPS_CONTROL: 18 XXX
  SG_ LKA_STATE : 139|4@0+ (1,0) [0|255] "" XXX
  SG_ TORQUE_REQUEST_3 : 140|1@0+ (1,0) [0|1] "" XXX
 
-BO_ 1089 NEW_MSG_4401: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1089 NEW_MSG_4401: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ NEW_SIGNAL_1 : 71|4@0+ (1,0) [0|15] "" XXX
  SG_ NEW_SIGNAL_2 : 79|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 1090 NEW_MSG_4402: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1090 NEW_MSG_4402: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ NEW_SIGNAL_1 : 143|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 1104 NEW_MSG_4500: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1104 NEW_MSG_4500: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ NEW_SIGNAL_3 : 32|16@1+ (1,-32768) [0|65535] "" XXX
  SG_ NEW_SIGNAL_2 : 64|16@1+ (1,-32768) [0|65535] "" XXX
  SG_ NEW_SIGNAL_1 : 80|16@1+ (1,-32768) [0|511] "" XXX
 
-BO_ 1123 NEW_MSG_4603: 18 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1123 NEW_MSG_4603: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ CRUISE_STATE_RELATED : 39|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 1152 CRUISE_STATE_2: 18 SAS
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1152 CRUISE_STATE_2: 20 SAS
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM_1 : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER_1 : 27|4@0+ (1,0) [0|15] "" XXX
@@ -477,9 +396,9 @@ BO_ 1152 CRUISE_STATE_2: 18 SAS
  SG_ SET_ME_0xEC : 103|8@0+ (1,0) [0|255] "" XXX
  SG_ SET_ME_0xFFFFFFFF : 119|32@0+ (1,0) [0|4294967295] "" XXX
 
-BO_ 72 STEER_REQUEST: 18 SAS
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1153 STEER_REQUEST_RX: 20 SAS
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -497,36 +416,16 @@ BO_ 72 STEER_REQUEST: 18 SAS
  SG_ SET_ME_0xA2 : 135|8@0+ (1,0) [0|255] "" XXX
  SG_ SET_ME_0xFA : 143|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 1153 STEER_REQUEST_RX: 18 SAS
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1154 NEW_MSG_4802: 20 XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
- SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
- SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
- SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
- SG_ SET_ME_0x9 : 31|4@0+ (1,0) [0|15] "" XXX
- SG_ STEER_ANGLE_REQUEST : 32|16@1+ (0.04395,-1098.75) [0|65535] "" XXX
- SG_ STEER_TORQUE_REQUEST : 48|16@1+ (0.006,-196.596) [0|65535] "" XXX
- SG_ ASSIST_MODE : 73|2@0+ (1,0) [0|3] "" XXX
- SG_ REVERSING_ASSIST : 78|5@0+ (1,0) [0|31] "" XXX
- SG_ ASSIST_TORQUE : 95|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0xFE : 103|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0x17 : 111|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0xFF : 119|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0x3 : 120|2@1+ (1,0) [0|3] "" XXX
- SG_ ACTIVE : 124|4@1+ (1,0) [0|15] "" XXX
- SG_ SET_ME_0xA2 : 135|8@0+ (1,0) [0|255] "" XXX
- SG_ SET_ME_0xFA : 143|8@0+ (1,0) [0|255] "" XXX
-
-BO_ 1154 NEW_MSG_4802: 18 XXX
  SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
- SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
 
-BO_ 1489 SET_SPEED: 10 SAS
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
+BO_ 1489 SET_SPEED: 12 SAS
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -534,8 +433,8 @@ BO_ 1489 SET_SPEED: 10 SAS
  SG_ SET_SPEED : 55|8@0+ (1,0) [0|255] "km/h" XXX
 
 BO_ 3729 CRUISE_BUTTONS: 8 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
@@ -549,12 +448,23 @@ BO_ 3729 CRUISE_BUTTONS: 8 XXX
  SG_ DIST_PLUS : 54|1@0+ (1,0) [0|1] "" XXX
 
 BO_ 3873 BLINKER_STATE: 4 XXX
- SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ CYCLE_COUNT : 5|6@0+ (1,0) [0|63] "" XXX
+ SG_ DIRECTION : 7|2@0+ (1,0) [0|3] "" XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ LEFT : 20|1@0+ (1,0) [0|1] "" XXX
  SG_ RIGHT : 21|1@0+ (1,0) [0|1] "" XXX
 
+CM_ BO_ 0 "Bridge diagnostic counters, emitted on CAN id 0 once per FlexRay cycle: 17 big-endian u16 counters (low 16 bits of free-running totals); 7 trailing u16 are zero padding. The per-second rates matter, not the absolute wrapping values.";
+CM_ SG_ 0 JUNK "Junk captures: symbols, coldstart attempts, or frames mangled by an in-progress injection";
+CM_ SG_ 0 TAIL_INCOMPLETE "Frame sampled before its final byte posted; report deferred a cycle";
+CM_ SG_ 0 NOTIFY_DROPPED "Frame-end notifications dropped because the notify ring was full";
+CM_ SG_ 0 INJECT_MISSED "Queued injections that missed their cycle or were recovered after stalling";
+CM_ SG_ 0 INJECT_REJECTED "Injection requests rejected (bad slot/cycle, no trigger rule, or already armed)";
+CM_ SG_ 0 INJECT_TABLE_FULL "Injection requests dropped because the queue was full";
+CM_ SG_ 0 CAN_OUT_DROPPED "Reports dropped from the TX queue (CAN link slower than the FlexRay cycle)";
+CM_ SG_ 0 DUP_DROPPED "Second-side duplicate captures dropped (each frame is seen on both bus segments)";
+CM_ SG_ 0 RING_OVERRUN "Capture DMA ring lapped a chunk before the parser copied it; chunk discarded";
+CM_ SG_ 0 CAN_INIT "MCP2518FD CAN controller (re)initialisations";
 CM_ SG_ 753 BRAKE_PRESSED_1 "This seems to be the most sensitive brake pressed signal";
 CM_ SG_ 931 CRUISE_ENGAGED_2 "Pre-enable maybe";
 CM_ SG_ 931 CRUISE_ENGAGED_3 "Inverse of CRUISE_ENGAGED_1, also 3 at standstill";
@@ -567,22 +477,8 @@ CM_ SG_ 1088 LKA_STATE "Ramp from 0-14 on engage/disengage. 5-9 otherwise";
 CM_ SG_ 1088 TORQUE_REQUEST_3 "Only 1 while not ramping up/down";
 CM_ SG_ 1152 BRAKE_MODE "Switch from regen to friction brakes maybe";
 CM_ SG_ 1489 SET_SPEED "Signal seems to glitch sometimes";
-CM_ BO_ 0 "Bridge diagnostic counters, emitted on CAN id 0 once per FlexRay cycle: 17 big-endian u16 counters (low 16 bits of free-running totals); 7 trailing u16 are zero padding. The per-second rates matter, not the absolute wrapping values.";
-CM_ SG_ 0 JUNK "Junk captures: symbols, coldstart attempts, or frames mangled by an in-progress injection";
-CM_ SG_ 0 TAIL_INCOMPLETE "Frame sampled before its final byte posted; report deferred a cycle";
-CM_ SG_ 0 NOTIFY_DROPPED "Frame-end notifications dropped because the notify ring was full";
-CM_ SG_ 0 INJECT_MISSED "Queued injections that missed their cycle or were recovered after stalling";
-CM_ SG_ 0 INJECT_REJECTED "Injection requests rejected (bad slot/cycle, no trigger rule, or already armed)";
-CM_ SG_ 0 INJECT_TABLE_FULL "Injection requests dropped because the queue was full";
-CM_ SG_ 0 CAN_OUT_DROPPED "Reports dropped from the TX queue (CAN link slower than the FlexRay cycle)";
-CM_ SG_ 0 DUP_DROPPED "Second-side duplicate captures dropped (each frame is seen on both bus segments)";
-CM_ SG_ 0 RING_OVERRUN "Capture DMA ring lapped a chunk before the parser copied it; chunk discarded";
-CM_ SG_ 0 CAN_INIT "MCP2518FD CAN controller (re)initialisations";
-VAL_ 117 engine_start 0 "stop" 1 "starting" 2 "running" 3 "off";
-VAL_ 494 STALK_RIGHT 0 "NONE" 1 "HALF" 2 "FULL";
-VAL_ 494 STALK_LEFT 0 "NONE" 1 "HALF" 2 "FULL";
+VAL_ 72 ACTIVE 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 643 GEAR 2 "N" 4 "D" 5 "R";
 VAL_ 1088 TORQUE_REQUEST_2 1 "INACTIVE" 2 "ACTIVE";
-VAL_ 72 ACTIVE 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 1153 ACTIVE 1 "INACTIVE" 2 "ACTIVE";
 VAL_ 3729 CRUISE_SPEED 0 "NONE" 1 "UP_1" 2 "UP_10" 5 "DOWN_1" 6 "DOWN_10";
