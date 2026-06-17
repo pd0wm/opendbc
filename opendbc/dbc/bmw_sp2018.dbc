@@ -388,8 +388,8 @@ BO_ 1153 STEER_REQUEST: 20 SAS
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
  SG_ SET_ME_0x9 : 31|4@0+ (1,0) [0|15] "" XXX
- SG_ STEER_ANGLE_REQUEST : 32|16@1+ (0.04395,-1098.75) [-540|540] "deg" XXX
- SG_ STEER_TORQUE_REQUEST : 48|16@1+ (0.006,-196.596) [-196|196] "Nm" XXX
+ SG_ STEER_ANGLE_REQUEST : 32|16@1+ (0.04395,-1098.75) [-1098.75|1781.51325] "deg" XXX
+ SG_ STEER_ANGLE_RATE_REQUEST : 48|16@1+ (0.4395,-14400.657) [-14400.657|14401.9755] "deg/s" XXX
  SG_ ASSIST_MODE : 73|2@0+ (1,0) [0|3] "" XXX
  SG_ REVERSING_ASSIST : 78|5@0+ (1,0) [0|31] "" XXX
  SG_ ASSIST_TORQUE : 95|8@0+ (1,0) [0|255] "" XXX
@@ -456,6 +456,8 @@ CM_ BO_ 1152 "CRUISE_STATE_2: the other ACC longitudinal actuation frame. Carrie
 CM_ BO_ 929 "NEW_MSG_3A01: companion frame to CRUISE_STATE (multiplexed engaged-status echo: c01300202a03.. engaged vs 001300202603.. disengaged). No accel/brake command; not needed to actuate ACC.";
 CM_ BO_ 930 "NEW_MSG_3A02: companion frame; payload varies independently of ACC engagement (counter/status). Not a longitudinal actuator.";
 CM_ BO_ 1154 "NEW_MSG_4802: companion to STEER_REQUEST (0x481); carries the steering-family constants (fe17ff13..), not longitudinal ACC.";
+CM_ SG_ 1153 STEER_ANGLE_REQUEST "Steering-wheel angle target. BMW steering resolution = 1/8192 of a full turn per LSB = 360/8192 = 0.0439453 deg (rounded to 0.04395), i.e. 2*pi/8192 = 0.000767 rad. Zero at raw 25000 -> offset = -25000*0.04395 = -1098.75 deg.";
+CM_ SG_ 1153 STEER_ANGLE_RATE_REQUEST "Angle-rate feedforward, = d(STEER_ANGLE_REQUEST)/dt. Scaling = 10x the angle LSB: 10*0.04395 = 0.4395 deg/s per LSB (= 10 * 2*pi/8192 rad/s). Zero at raw 32766 -> offset = -32766*0.4395 = -14400.657 deg/s.";
 CM_ SG_ 931 ACCELERATION_REQUEST "Powertrain (engine/regen) longitudinal accel target. Neutral/0 m/s2 at raw 32000 (empirical zero ~32030); factor 0.0015 m/s2/count fitted vs aEgo in steady cruise/launch (r>0.99). Held at 0 during standstill hold (CRUISE_ENGAGED_3==3). Not the same scaling as KINEMATICS_4.ACCELERATION (0.0025).";
 CM_ SG_ 931 CRUISE_ENGAGED_2 "Pre-enable maybe";
 CM_ SG_ 931 CRUISE_ENGAGED_3 "Inverse of CRUISE_ENGAGED_1, also 3 at standstill. ==3 while engaged is the standstill-HOLD state: ACCELERATION_REQUEST forced 0, CRUISE_STATE_2.BRAKE_MODE==2 and BRAKE_REQUEST clamped to the hold value (raw ~31196, ~-1.2 m/s2). Goes 3->0 on launch/release.";

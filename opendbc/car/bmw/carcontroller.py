@@ -1,5 +1,5 @@
 from opendbc.can import CANPacker
-from opendbc.car import Bus
+from opendbc.car import Bus, DT_CTRL
 from opendbc.car.crc import CRC8J1850, mk_crc8_fun
 from opendbc.car.interfaces import CarControllerBase
 from opendbc.car.lateral import apply_steer_angle_limits_vm
@@ -18,7 +18,7 @@ STEER_DEFAULTS = {
   "COUNTER": 0,
   "SET_ME_0x9": 0x9,
   "STEER_ANGLE_REQUEST": 0.0,
-  "STEER_TORQUE_REQUEST": 0.0,
+  "STEER_ANGLE_RATE_REQUEST": 0.0,
   "REVERSING_ASSIST": 0,
   "ASSIST_TORQUE": 0xA0,
   "ASSIST_MODE": 0x1,
@@ -77,7 +77,7 @@ class CarController(CarControllerBase):
     self.steer_counter = 0
     self.last_cycle: int | None = None
 
-  def create_steer_request(self, apply_angle: float, cycle: int, counter: int, lat_active: bool):
+  def create_steer_request(self, apply_angle: float, apply_rate: float, cycle: int, counter: int, lat_active: bool):
     values = dict(STEER_DEFAULTS)
     if not lat_active:
       values.update(STEER_DISABLED)
@@ -87,6 +87,9 @@ class CarController(CarControllerBase):
     # instead (smooth handoff) and test that the EPS does not fault when sending a
     # non-zero angle when inactive.
     values["STEER_ANGLE_REQUEST"] = apply_angle if lat_active else 0.0
+    # Angle-rate feedforward (deg/s): d(angle)/dt. Zeroed when inactive to match the
+    # stock inactive frame.
+    values["STEER_ANGLE_RATE_REQUEST"] = apply_rate if lat_active else 0.0
     values["CYCLE_COUNT"] = cycle & 0x3F
     values["COUNTER"] = counter
 
@@ -108,6 +111,9 @@ class CarController(CarControllerBase):
 
     apply_angle = apply_steer_angle_limits_vm(actuators.steeringAngleDeg, self.apply_angle_last, CS.out.vEgoRaw,
                                               CS.out.steeringAngleDeg, CC.latActive, CarControllerParams, self.VM)
+    # STEER_ANGLE_RATE_REQUEST feedforward: derivative of the (already rate-limited)
+    # commanded angle. Control runs every frame at 100 Hz (STEER_STEP=1) so dt == DT_CTRL.
+    apply_rate = (apply_angle - self.apply_angle_last) / DT_CTRL
     self.apply_angle_last = apply_angle
 
     # Advance the free-running rolling counter to the current bus cycle: +1 per
@@ -128,7 +134,7 @@ class CarController(CarControllerBase):
     # the request is disabled inside the message (ACTIVE=INACTIVE, assist zeroed).
     for i, cycle in enumerate(next_trigger_cycles(CS.cycle, CarControllerParams.STEER_LOOKAHEAD)):
       counter = (self.steer_counter + i + 1) % BMW_STEER_COUNTER_MOD
-      can_sends.append(self.create_steer_request(apply_angle, cycle, counter, CC.latActive))
+      can_sends.append(self.create_steer_request(apply_angle, apply_rate, cycle, counter, CC.latActive))
 
     self.frame += 1
     new_actuators = actuators.as_builder()
