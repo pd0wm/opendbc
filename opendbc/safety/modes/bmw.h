@@ -51,10 +51,9 @@
 
 // FlexRay cycle geometry: 64 cycles per round, ticking at 200 Hz. Steering frames live on
 // cycles where cycle % 4 == 1, giving 16 steering cycles per round (one every 20 ms).
-#define BMW_FLEXRAY_CYCLES 64
 #define BMW_STEER_CYCLE_MOD 4
 #define BMW_STEER_CYCLE_REM 1
-#define BMW_STEER_CYCLES (BMW_FLEXRAY_CYCLES / BMW_STEER_CYCLE_MOD)  // 16
+#define BMW_STEER_CYCLES 16  // steering cycles per round (64 FlexRay cycles / BMW_STEER_CYCLE_MOD)
 #define BMW_CYCLE_HZ 200U
 
 // Per-steering-cycle angle history: the last accepted CAN-scale angle for each of the 16
