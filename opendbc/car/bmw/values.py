@@ -56,7 +56,7 @@ BMW_STEER_CRC_RANGE = (2, 3, 18)  # (checksum_byte, start, end)
 class BMWCarSpecs(CarSpecs):
   mass: float = 2000.
   wheelbase: float = 3.105
-  steerRatio: float = 16.3
+  steerRatio: float = 12.5
 
 
 @dataclass
