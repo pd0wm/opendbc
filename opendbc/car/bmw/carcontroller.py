@@ -82,13 +82,14 @@ class CarController(CarControllerBase):
     if not lat_active:
       values.update(STEER_DISABLED)
 
-    # While disabled, send a zero angle to match the stock inactive frame exactly.
-    # TODO: once panda-side angle safety is in place, send the measured angle here
-    # instead (smooth handoff) and test that the EPS does not fault when sending a
-    # non-zero angle when inactive.
-    values["STEER_ANGLE_REQUEST"] = apply_angle if lat_active else 0.0
+    # Track the measured angle while disabled (apply_steer_angle_limits_vm returns the
+    # measured angle when inactive) so engaging doesn't step away from it and trip the
+    # panda angle rate limit. The panda safety requires STEER_ANGLE_REQUEST to stay close
+    # to the measured angle whenever ACTIVE != 2 (see opendbc/safety/modes/bmw.h).
+    # TODO: bench test that the EPS does not fault on a non-zero inactive angle request.
+    values["STEER_ANGLE_REQUEST"] = apply_angle
     # Angle-rate feedforward (deg/s): d(angle)/dt. Zeroed when inactive to match the
-    # stock inactive frame.
+    # stock inactive frame (the panda safety does not check this signal).
     values["STEER_ANGLE_RATE_REQUEST"] = apply_rate if lat_active else 0.0
     values["CYCLE_COUNT"] = cycle & 0x3F
     values["COUNTER"] = counter
