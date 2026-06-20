@@ -24,7 +24,8 @@ BMW_WHEEL_STANDSTILL = 4
 BMW_FLEXRAY_CYCLES = 64
 BMW_STEER_CYCLE_MOD = 4
 BMW_STEER_CYCLE_REM = 1
-BMW_STEER_TX_WINDOW = 8
+BMW_STEER_TX_FUTURE_WINDOW = 8
+BMW_STEER_TX_PAST_WINDOW = 4
 BMW_CYCLE_HZ = 200
 
 # STEER_ANGLE_REQUEST / STEERING_ANGLE_1 DBC scale (0.04395 deg/LSB)
@@ -122,6 +123,16 @@ class TestBmwSafety(common.CarSafetyTest):
           break
     return cycles
 
+  def _prev_steer_cycles(self, cur: int, n: int):
+    cycles = []
+    for i in range(1, BMW_FLEXRAY_CYCLES + 1):
+      cycle = (cur - i) % BMW_FLEXRAY_CYCLES
+      if cycle % BMW_STEER_CYCLE_MOD == BMW_STEER_CYCLE_REM:
+        cycles.append(cycle)
+        if len(cycles) == n:
+          break
+    return cycles
+
   def test_prev_gas(self):
     raise unittest.SkipTest("TODO")
 
@@ -208,13 +219,18 @@ class TestBmwSafety(common.CarSafetyTest):
 
     live_cycle = 10
     self._set_rx_cycle(live_cycle)
-    for cycle in self._next_steer_cycles(live_cycle, BMW_STEER_TX_WINDOW):
+    for cycle in self._next_steer_cycles(live_cycle, BMW_STEER_TX_FUTURE_WINDOW):
+      self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, cycle=cycle)))
+
+    for cycle in self._prev_steer_cycles(live_cycle, BMW_STEER_TX_PAST_WINDOW):
       self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, cycle=cycle)))
 
     # The safety window is intentionally wider than the controller's 4-cycle lookahead,
     # but still narrower than a full 16-slot FlexRay steering round.
-    outside_window_cycle = self._next_steer_cycles(live_cycle, BMW_STEER_TX_WINDOW + 1)[-1]
-    self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=outside_window_cycle)))
+    outside_future_cycle = self._next_steer_cycles(live_cycle, BMW_STEER_TX_FUTURE_WINDOW + 1)[-1]
+    outside_past_cycle = self._prev_steer_cycles(live_cycle, BMW_STEER_TX_PAST_WINDOW + 1)[-1]
+    self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=outside_future_cycle)))
+    self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=outside_past_cycle)))
 
   def test_cycle_tx_window_blocks_full_history_replay(self):
     self._reset_state()
@@ -226,16 +242,19 @@ class TestBmwSafety(common.CarSafetyTest):
     max_delta = self._max_angle_delta(11)
     angle = 0.
 
-    # An adversarial sender can update only the accepted lookahead slots while RX cycle
-    # time is parked. It cannot walk all 16 history slots and then wrap the rate reference.
-    for cycle in self._next_steer_cycles(0, BMW_STEER_TX_WINDOW):
+    # An adversarial sender can update only the accepted slots while RX cycle time is
+    # parked. It cannot walk all 16 history slots and then wrap the rate reference.
+    accepted_cycles = list(reversed(self._prev_steer_cycles(0, BMW_STEER_TX_PAST_WINDOW)))
+    accepted_cycles += self._next_steer_cycles(0, BMW_STEER_TX_FUTURE_WINDOW)
+    for cycle in accepted_cycles:
       angle += max_delta * 0.5
       self.assertTrue(self._tx(self._angle_cmd_msg(angle, active=True, cycle=cycle)))
 
     angle += max_delta * 0.5
-    outside_window_cycle = self._next_steer_cycles(0, BMW_STEER_TX_WINDOW + 1)[-1]
-    self.assertFalse(self._tx(self._angle_cmd_msg(angle, active=True, cycle=outside_window_cycle)))
-    self.assertFalse(self._tx(self._angle_cmd_msg(angle, active=True, cycle=BMW_STEER_CYCLE_REM)))
+    outside_future_cycle = self._next_steer_cycles(0, BMW_STEER_TX_FUTURE_WINDOW + 1)[-1]
+    first_accepted_cycle = accepted_cycles[0]
+    self.assertFalse(self._tx(self._angle_cmd_msg(angle, active=True, cycle=outside_future_cycle)))
+    self.assertFalse(self._tx(self._angle_cmd_msg(angle, active=True, cycle=first_accepted_cycle)))
 
   def test_reversing_assist_always_zero(self):
     self._reset_state()

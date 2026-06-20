@@ -57,7 +57,8 @@
 #define BMW_STEER_CYCLE_REM 1
 #define BMW_STEER_CYCLES (BMW_FLEXRAY_CYCLES / BMW_STEER_CYCLE_MOD)
 #define BMW_CYCLE_HZ 200U
-#define BMW_STEER_TX_WINDOW 8  // accepted future steering cycles from the latest RX cycle
+#define BMW_STEER_TX_FUTURE_WINDOW 8  // accepted future steering cycles from the latest RX cycle
+#define BMW_STEER_TX_PAST_WINDOW 4    // accepted stale steering cycles in case TX lags RX
 
 // Per-steering-cycle angle history: the last accepted CAN-scale angle for each of the 16
 // steering cycles in a FlexRay round. Persists across the round wrap so a command can always
@@ -74,20 +75,43 @@ static void bmw_reset_steer_state(void) {
   bmw_rx_cycle_last = 0;
 }
 
-static bool bmw_cycle_in_tx_window(int cycle) {
-  int steering_cycles_seen = 0;
+static int bmw_next_steer_cycle(int cycle) {
+  int delta = (BMW_STEER_CYCLE_REM - (cycle % BMW_STEER_CYCLE_MOD) + BMW_STEER_CYCLE_MOD) % BMW_STEER_CYCLE_MOD;
+  if (delta == 0) {
+    delta = BMW_STEER_CYCLE_MOD;
+  }
 
-  for (int i = 1; (i <= BMW_FLEXRAY_CYCLES) && (steering_cycles_seen < BMW_STEER_TX_WINDOW); i++) {
-    int c = (bmw_rx_cycle_last + i) % BMW_FLEXRAY_CYCLES;
-    if ((c % BMW_STEER_CYCLE_MOD) == BMW_STEER_CYCLE_REM) {
-      if (c == cycle) {
-        return true;
-      }
-      steering_cycles_seen++;
+  return (cycle + delta) % BMW_FLEXRAY_CYCLES;
+}
+
+static int bmw_prev_steer_cycle(int cycle) {
+  int delta = ((cycle % BMW_STEER_CYCLE_MOD) - BMW_STEER_CYCLE_REM + BMW_STEER_CYCLE_MOD) % BMW_STEER_CYCLE_MOD;
+  if (delta == 0) {
+    delta = BMW_STEER_CYCLE_MOD;
+  }
+
+  return (cycle + BMW_FLEXRAY_CYCLES - delta) % BMW_FLEXRAY_CYCLES;
+}
+
+// Allow only a bounded window around the latest RX CYCLE_COUNT.
+static bool bmw_cycle_in_tx_window(int cycle) {
+  bool in_window = false;
+
+  if ((cycle % BMW_STEER_CYCLE_MOD) == BMW_STEER_CYCLE_REM) {
+    int future_cycle = bmw_rx_cycle_last;
+    for (int i = 0; (i < BMW_STEER_TX_FUTURE_WINDOW) && !in_window; i++) {
+      future_cycle = bmw_next_steer_cycle(future_cycle);
+      in_window = cycle == future_cycle;
+    }
+
+    int past_cycle = bmw_rx_cycle_last;
+    for (int i = 0; (i < BMW_STEER_TX_PAST_WINDOW) && !in_window; i++) {
+      past_cycle = bmw_prev_steer_cycle(past_cycle);
+      in_window = cycle == past_cycle;
     }
   }
 
-  return false;
+  return in_window;
 }
 
 // Angle command safety, mirroring steer_angle_cmd_checks_vm but with a cycle-based rate
@@ -212,7 +236,12 @@ static void bmw_rx_hook(const CANPacket_t *msg) {
       int fr = (msg->data[11] << 8) | msg->data[10];
       int total_raw = rl + rr + fl + fr;
       float speed_kph = (((float)total_raw / 4.0f) * 0.0198863636f) - 652.0f;
-      speed_kph = speed_kph < 0 ? -speed_kph : speed_kph; // abs(speed_kph), speeds can be negative when in reverse
+
+      // Speeds can be negative when in reverse.
+      if (speed_kph < 0.0f) {
+        speed_kph = -speed_kph;
+      }
+
       UPDATE_VEHICLE_SPEED(speed_kph * KPH_TO_MS);
 
       // Per-wheel motion flags (4 bits each): FL/RR in byte 12, RL/FR in byte 13.
