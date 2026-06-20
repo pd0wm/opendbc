@@ -145,6 +145,10 @@ static bool bmw_steer_angle_checks(int desired_angle, int desired_rate, bool ste
   if (controls_allowed && steer_control_enabled && valid_cycle) {
     // Rate limit reference: the angle committed for the previous steering cycle.
     // One steering cycle is BMW_STEER_CYCLE_MOD raw cycles, or 20 ms at 200 Hz.
+    // NOTE: each slot is rate limited only against its previous slot. An adversarial carcontroller could,
+    // within one 50 Hz cycle, write slot N high, write slot N+1 higher, then overwrite slot N low again,
+    // leaving adjacent committed angles up to (2*window - 1) deltas apart: a bounded back-and-forth
+    // vibration above the per-cycle rate. Absolute angle still can't exceed the accel limit below.
     int prev_slot = (slot + BMW_STEER_CYCLES - 1) % BMW_STEER_CYCLES;
     int desired_angle_last_for_cycle = bmw_desired_angle_last[prev_slot];
 
