@@ -21,8 +21,10 @@ MSG_STEER_REQUEST = 72  # bare FlexRay slot 0x48 the inject is re-addressed to
 BMW_BUS = 0
 BMW_STEER_ACTIVE = 2
 BMW_WHEEL_STANDSTILL = 4
+BMW_FLEXRAY_CYCLES = 64
 BMW_STEER_CYCLE_MOD = 4
 BMW_STEER_CYCLE_REM = 1
+BMW_STEER_TX_WINDOW = 8
 BMW_CYCLE_HZ = 200
 
 # STEER_ANGLE_REQUEST / STEERING_ANGLE_1 DBC scale (0.04395 deg/LSB)
@@ -59,27 +61,28 @@ class TestBmwSafety(common.CarSafetyTest):
     _, dat, _ = self.packer.make_can_msg("STEER_REQUEST", BMW_BUS, values)
     return libsafety_py.make_CANPacket(MSG_STEER_REQUEST, BMW_BUS, dat)
 
-  def _angle_meas_msg(self, angle: float):
-    return self.packer.make_can_msg_safety("STEERING_WHEEL_2", BMW_BUS, {"STEERING_ANGLE_1": angle})
+  def _angle_meas_msg(self, angle: float, cycle: int = 0):
+    return self.packer.make_can_msg_safety("STEERING_WHEEL_2", BMW_BUS, {"STEERING_ANGLE_1": angle, "CYCLE_COUNT": cycle})
 
-  def _speed_msg(self, speed: float):
+  def _speed_msg(self, speed: float, cycle: int = 0):
     v = speed * 3.6  # km/h
-    return self.packer.make_can_msg_safety("WHEEL_SPEEDS", BMW_BUS, {"FL": v, "FR": v, "RL": v, "RR": v})
+    return self.packer.make_can_msg_safety("WHEEL_SPEEDS", BMW_BUS, {"FL": v, "FR": v, "RL": v, "RR": v, "CYCLE_COUNT": cycle})
 
   def _speed_msg_2(self, speed: float):
     return None  # single speed source
 
-  def _vehicle_moving_msg(self, speed: float):
+  def _vehicle_moving_msg(self, speed: float, cycle: int = 0):
     v = speed * 3.6  # km/h
     state = 1 if speed > self.STANDSTILL_THRESHOLD else BMW_WHEEL_STANDSTILL
     return self.packer.make_can_msg_safety("WHEEL_SPEEDS", BMW_BUS,
-      {"FL": v, "FR": v, "RL": v, "RR": v, "FL_STATE": state, "FR_STATE": state, "RL_STATE": state, "RR_STATE": state})
+      {"FL": v, "FR": v, "RL": v, "RR": v, "FL_STATE": state, "FR_STATE": state, "RL_STATE": state, "RR_STATE": state,
+       "CYCLE_COUNT": cycle})
 
-  def _pcm_status_msg(self, enable: bool):
-    return self.packer.make_can_msg_safety("CRUISE_STATE", BMW_BUS, {"CRUISE_ENGAGED_1": enable})
+  def _pcm_status_msg(self, enable: bool, cycle: int = 0):
+    return self.packer.make_can_msg_safety("CRUISE_STATE", BMW_BUS, {"CRUISE_ENGAGED_1": enable, "CYCLE_COUNT": cycle})
 
-  def _user_brake_msg(self, brake: bool):
-    return self.packer.make_can_msg_safety("BRAKE_PEDAL_3", BMW_BUS, {"BRAKE_PRESSED_1": brake})
+  def _user_brake_msg(self, brake: bool, cycle: int = 0):
+    return self.packer.make_can_msg_safety("BRAKE_PEDAL_3", BMW_BUS, {"BRAKE_PRESSED_1": brake, "CYCLE_COUNT": cycle})
 
   def _user_gas_msg(self, gas):
     # BMW does not monitor gas (stock ACC handles gas override); see skipped gas tests below
@@ -95,6 +98,9 @@ class TestBmwSafety(common.CarSafetyTest):
     for _ in range(MAX_SAMPLE_VALS):
       self._rx(self._speed_msg(speed))
 
+  def _set_rx_cycle(self, cycle: int, speed: float = 11.):
+    self._rx(self._speed_msg(speed, cycle=cycle))
+
   def _reset_state(self):
     # set_safety_hooks re-runs bmw_init, which resets the per-cycle angle history / rate window
     self._reset_safety_hooks()
@@ -106,15 +112,24 @@ class TestBmwSafety(common.CarSafetyTest):
     max_angle_rate = math.degrees(self.VM.get_steer_from_curvature(max_curvature_rate, speed, 0))
     return max_angle_rate * (BMW_STEER_CYCLE_MOD / BMW_CYCLE_HZ)
 
-  # BMW has no gas signal; the stock ACC handles gas override by dropping cruise.
+  def _next_steer_cycles(self, cur: int, n: int):
+    cycles = []
+    for i in range(1, BMW_FLEXRAY_CYCLES + 1):
+      cycle = (cur + i) % BMW_FLEXRAY_CYCLES
+      if cycle % BMW_STEER_CYCLE_MOD == BMW_STEER_CYCLE_REM:
+        cycles.append(cycle)
+        if len(cycles) == n:
+          break
+    return cycles
+
   def test_prev_gas(self):
-    raise unittest.SkipTest("BMW does not monitor gas")
+    raise unittest.SkipTest("TODO")
 
   def test_allow_engage_with_gas_pressed(self):
-    raise unittest.SkipTest("BMW does not monitor gas")
+    raise unittest.SkipTest("TODO")
 
   def test_no_disengage_on_gas(self):
-    raise unittest.SkipTest("BMW does not monitor gas")
+    raise unittest.SkipTest("TODO")
 
   # *** angle safety tests ***
 
@@ -185,6 +200,43 @@ class TestBmwSafety(common.CarSafetyTest):
       self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=cycle)))
     self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, cycle=BMW_STEER_CYCLE_REM)))
 
+  def test_cycle_tx_window(self):
+    self._reset_state()
+    self.safety.set_controls_allowed(True)
+    self._reset_angle_measurement(0)
+    self._reset_speed_measurement(11)
+
+    live_cycle = 10
+    self._set_rx_cycle(live_cycle)
+    for cycle in self._next_steer_cycles(live_cycle, BMW_STEER_TX_WINDOW):
+      self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, cycle=cycle)))
+
+    # The safety window is intentionally wider than the controller's 4-cycle lookahead,
+    # but still narrower than a full 16-slot FlexRay steering round.
+    outside_window_cycle = self._next_steer_cycles(live_cycle, BMW_STEER_TX_WINDOW + 1)[-1]
+    self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=outside_window_cycle)))
+
+  def test_cycle_tx_window_blocks_full_history_replay(self):
+    self._reset_state()
+    self.safety.set_controls_allowed(True)
+    self._reset_angle_measurement(0)
+    self._reset_speed_measurement(12)
+    self._set_rx_cycle(0, speed=12)
+
+    max_delta = self._max_angle_delta(11)
+    angle = 0.
+
+    # An adversarial sender can update only the accepted lookahead slots while RX cycle
+    # time is parked. It cannot walk all 16 history slots and then wrap the rate reference.
+    for cycle in self._next_steer_cycles(0, BMW_STEER_TX_WINDOW):
+      angle += max_delta * 0.5
+      self.assertTrue(self._tx(self._angle_cmd_msg(angle, active=True, cycle=cycle)))
+
+    angle += max_delta * 0.5
+    outside_window_cycle = self._next_steer_cycles(0, BMW_STEER_TX_WINDOW + 1)[-1]
+    self.assertFalse(self._tx(self._angle_cmd_msg(angle, active=True, cycle=outside_window_cycle)))
+    self.assertFalse(self._tx(self._angle_cmd_msg(angle, active=True, cycle=BMW_STEER_CYCLE_REM)))
+
   def test_reversing_assist_always_zero(self):
     self._reset_state()
     self.safety.set_controls_allowed(True)
@@ -200,12 +252,14 @@ class TestBmwSafety(common.CarSafetyTest):
     self._reset_state()
     self.safety.set_controls_allowed(True)
     self._reset_angle_measurement(0)
-    self._reset_speed_measurement(11)
+    self._reset_speed_measurement(12)
+    self._set_rx_cycle(57, speed=12)
     max_delta = self._max_angle_delta(11)
     ref = max_delta * 0.5
 
     # commit an angle on the last steering cycle of the round
     self.assertTrue(self._tx(self._angle_cmd_msg(ref, True, cycle=61)))
+    self._set_rx_cycle(61, speed=12)
     # first steering cycle of the next round is limited against cycle 61's committed angle
     self.assertTrue(self._tx(self._angle_cmd_msg(ref + max_delta * 0.5, True, cycle=1)))
     self.assertFalse(self._tx(self._angle_cmd_msg(ref + max_delta * 3.0, True, cycle=1)))

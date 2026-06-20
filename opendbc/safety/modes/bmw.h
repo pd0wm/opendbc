@@ -20,8 +20,9 @@
 // FlexRay cycle it is destined for and queues a few upcoming cycles every control frame,
 // re-queuing the freshest angle (see car/bmw/carcontroller.py). As a result the same cycle
 // can be sent multiple times with an evolving angle, and the cycle values are NOT monotonic
-// on the wire. The cycle counter is taken as the clock (it ticks at 200 Hz), so the angle
-// rate limit is computed per steering cycle: each command is limited against the angle
+// on the wire. The latest received FlexRay cycle gates TX to a bounded lookahead window, so
+// a sender cannot synthesize a full round of steering cycles without bus time advancing. The
+// angle rate limit is computed per steering cycle: each command is limited against the angle
 // committed for the PREVIOUS steering cycle, kept in a small per-cycle history that survives
 // the 64-cycle wrap. No wall-clock timer is used.
 
@@ -51,10 +52,12 @@
 
 // FlexRay cycle geometry: 64 cycles per round, ticking at 200 Hz. Steering frames live on
 // cycles where cycle % 4 == 1, giving 16 steering cycles per round (one every 20 ms).
+#define BMW_FLEXRAY_CYCLES 64
 #define BMW_STEER_CYCLE_MOD 4
 #define BMW_STEER_CYCLE_REM 1
-#define BMW_STEER_CYCLES 16  // steering cycles per round (64 FlexRay cycles / BMW_STEER_CYCLE_MOD)
+#define BMW_STEER_CYCLES (BMW_FLEXRAY_CYCLES / BMW_STEER_CYCLE_MOD)
 #define BMW_CYCLE_HZ 200U
+#define BMW_STEER_TX_WINDOW 8  // accepted future steering cycles from the latest RX cycle
 
 // Per-steering-cycle angle history: the last accepted CAN-scale angle for each of the 16
 // steering cycles in a FlexRay round. Persists across the round wrap so a command can always
@@ -62,28 +65,48 @@
 // openpilot sends a frame every steering cycle (tracking the measured angle while inactive),
 // so this stays current without any measured-angle fallback or disengage reset.
 static int bmw_desired_angle_last[BMW_STEER_CYCLES];
+static int bmw_rx_cycle_last = 0;
 
 static void bmw_reset_steer_state(void) {
   for (int i = 0; i < BMW_STEER_CYCLES; i++) {
     bmw_desired_angle_last[i] = 0;
   }
+  bmw_rx_cycle_last = 0;
+}
+
+static bool bmw_cycle_in_tx_window(int cycle) {
+  int steering_cycles_seen = 0;
+
+  for (int i = 1; (i <= BMW_FLEXRAY_CYCLES) && (steering_cycles_seen < BMW_STEER_TX_WINDOW); i++) {
+    int c = (bmw_rx_cycle_last + i) % BMW_FLEXRAY_CYCLES;
+    if ((c % BMW_STEER_CYCLE_MOD) == BMW_STEER_CYCLE_REM) {
+      if (c == cycle) {
+        return true;
+      }
+      steering_cycles_seen++;
+    }
+  }
+
+  return false;
 }
 
 // Angle command safety, mirroring steer_angle_cmd_checks_vm but with a cycle-based rate
 // limit reference (the previous steering cycle's committed angle) instead of a single
 // monotonic last value, since BMW frames are cycle-tagged and re-queued out of order. The
 // cycle counter is the clock (200 Hz), so no wall-clock timer is used.
-static bool bmw_steer_angle_checks(int desired_angle, bool steer_active, int cycle) {
-  static const AngleSteeringLimits BMW_STEERING_LIMITS = {
+static bool bmw_steer_angle_checks(int desired_angle, bool steer_control_enabled, int cycle) {
+  static const AngleSteeringLimits limits = {
     .max_angle = 8191,  // 360 deg, matches openpilot STEER_ANGLE_MAX (assumed EPS fault above)
     .angle_deg_to_can = BMW_ANGLE_DEG_TO_CAN,
   };
   // Vehicle model used for the lateral accel/jerk limits, matching car/bmw (BMW_SP2018 specs).
-  static const AngleSteeringParams BMW_STEERING_PARAMS = {
+  static const AngleSteeringParams params = {
     .slip_factor = -0.0005401875442447107,  // calc_slip_factor(VM)
     .steer_ratio = 12.5,
     .wheelbase = 3.105,
   };
+
+  // This check uses a simple vehicle model to allow for constant lateral acceleration and jerk limits across all speeds.
 
   // Highway curves are rolled in the direction of the turn, add tolerance to compensate
   const float MAX_LATERAL_ACCEL = ISO_LATERAL_ACCEL + (EARTH_G * AVERAGE_ROAD_ROLL);  // ~3.6 m/s^2
@@ -91,7 +114,7 @@ static bool bmw_steer_angle_checks(int desired_angle, bool steer_active, int cyc
   const float MAX_LATERAL_JERK = 3.0 + (EARTH_G * AVERAGE_ROAD_ROLL);  // ~3.6 m/s^3
 
   const float fudged_speed = SAFETY_MAX((vehicle_speed.min / VEHICLE_SPEED_FACTOR) - 1.0, 1.0);
-  const float curvature_factor = get_curvature_factor(fudged_speed, BMW_STEERING_PARAMS);
+  const float curvature_factor = get_curvature_factor(fudged_speed, params);
 
   bool violation = false;
 
@@ -100,40 +123,52 @@ static bool bmw_steer_angle_checks(int desired_angle, bool steer_active, int cyc
   if (!valid_cycle) {
     violation = true;
   }
+
+  // Ensure we can't send frames too far in advance and cycle the bmw_desired_angle_last array in one timestep
+  if (valid_cycle && !bmw_cycle_in_tx_window(cycle)) {
+    violation = true;
+  }
   int slot = valid_cycle ? (cycle / BMW_STEER_CYCLE_MOD) : 0;  // 0..15
 
-  if (controls_allowed && steer_active && valid_cycle) {
-    // rate limit reference: the angle committed for the previous steering cycle (one steering
-    // cycle == BMW_STEER_CYCLE_MOD raw cycles == 20 ms at 200 Hz).
+  if (controls_allowed && steer_control_enabled && valid_cycle) {
+    // rate limit reference: the angle committed for the previous steering cycle (one steering cycle == BMW_STEER_CYCLE_MOD raw cycles == 20 ms at 200 Hz).
     int prev_slot = (slot + BMW_STEER_CYCLES - 1) % BMW_STEER_CYCLES;
-    int ref_angle = bmw_desired_angle_last[prev_slot];
+    int desired_angle_last_for_cycle = bmw_desired_angle_last[prev_slot];
 
-    // *** ISO lateral jerk limit, applied over one steering cycle ***
+    // *** ISO lateral jerk limit ***
+    // calculate maximum angle rate per second
     const float max_curvature_rate_sec = MAX_LATERAL_JERK / (fudged_speed * fudged_speed);
-    const float max_angle_rate_sec = get_angle_from_curvature(max_curvature_rate_sec, curvature_factor, BMW_STEERING_PARAMS);
+    const float max_angle_rate_sec = get_angle_from_curvature(max_curvature_rate_sec, curvature_factor, params);
+
+    // finally get max angle delta per steering cycle
     const float steer_cycle_sec = (float)BMW_STEER_CYCLE_MOD / (float)BMW_CYCLE_HZ;  // 20 ms
-    const int max_angle_delta_can = (max_angle_rate_sec * steer_cycle_sec * BMW_STEERING_LIMITS.angle_deg_to_can) + 1.;
+    const float max_angle_delta = max_angle_rate_sec * steer_cycle_sec;
+    const int max_angle_delta_can = (max_angle_delta * limits.angle_deg_to_can) + 1.;
 
-    violation |= safety_max_limit_check(desired_angle, ref_angle + max_angle_delta_can, ref_angle - max_angle_delta_can);
+    // NOTE: symmetric up and down limits
+    const int highest_desired_angle = desired_angle_last_for_cycle + max_angle_delta_can;
+    const int lowest_desired_angle = desired_angle_last_for_cycle - max_angle_delta_can;
 
-    // *** ISO lateral accel limit (absolute) ***
+    violation |= safety_max_limit_check(desired_angle, highest_desired_angle, lowest_desired_angle);
+
+    // *** ISO lateral accel limit ***
     const float max_curvature = MAX_LATERAL_ACCEL / (fudged_speed * fudged_speed);
-    const float max_angle = get_angle_from_curvature(max_curvature, curvature_factor, BMW_STEERING_PARAMS);
-    const int max_angle_can = (max_angle * BMW_STEERING_LIMITS.angle_deg_to_can) + 1.;
+    const float max_angle = get_angle_from_curvature(max_curvature, curvature_factor, params);
+    const int max_angle_can = (max_angle * limits.angle_deg_to_can) + 1.;
 
     violation |= safety_max_limit_check(desired_angle, max_angle_can, -max_angle_can);
   }
 
-  // Angle should track the measured angle while not actively steering.
-  if (!steer_active) {
-    const int max_inactive_angle = SAFETY_CLAMP(angle_meas.max, -BMW_STEERING_LIMITS.max_angle, BMW_STEERING_LIMITS.max_angle) + 1;
-    const int min_inactive_angle = SAFETY_CLAMP(angle_meas.min, -BMW_STEERING_LIMITS.max_angle, BMW_STEERING_LIMITS.max_angle) - 1;
+  // Angle should either be 0 or same as current angle while not steering
+  if (!steer_control_enabled) {
+    const int max_inactive_angle = SAFETY_CLAMP(angle_meas.max, -limits.max_angle, limits.max_angle) + 1;
+    const int min_inactive_angle = SAFETY_CLAMP(angle_meas.min, -limits.max_angle, limits.max_angle) - 1;
     violation |= safety_max_limit_check(desired_angle, max_inactive_angle, min_inactive_angle);
   }
 
-  // No active steering allowed when controls are not allowed.
+  // No angle control allowed when controls are not allowed
   if (!controls_allowed) {
-    violation |= steer_active;
+    violation |= steer_control_enabled;
   }
 
   // commit accepted commands to the per-cycle history. A rejected command is not stored, so
@@ -147,6 +182,9 @@ static bool bmw_steer_angle_checks(int desired_angle, bool steer_active, int cyc
 
 static void bmw_rx_hook(const CANPacket_t *msg) {
   if (msg->bus == BMW_BUS) {
+    // CYCLE_COUNT (bits 0-5) is present on all BMW FlexRay report frames we monitor.
+    bmw_rx_cycle_last = msg->data[0] & 0x3FU;
+
     if (msg->addr == BMW_CRUISE_STATE) {
       // CRUISE_ENGAGED_1 (bit 67): stock ACC active. Arms controls on the rising edge.
       pcm_cruise_check(GET_BIT(msg, 67U));
@@ -174,6 +212,7 @@ static void bmw_rx_hook(const CANPacket_t *msg) {
       int fr = (msg->data[11] << 8) | msg->data[10];
       int total_raw = rl + rr + fl + fr;
       float speed_kph = (((float)total_raw / 4.0f) * 0.0198863636f) - 652.0f;
+      speed_kph = speed_kph < 0 ? -speed_kph : speed_kph; // abs(speed_kph), speeds can be negative when in reverse
       UPDATE_VEHICLE_SPEED(speed_kph * KPH_TO_MS);
 
       // Per-wheel motion flags (4 bits each): FL/RR in byte 12, RL/FR in byte 13.
