@@ -11,7 +11,8 @@
 //
 // The steering inject (STEER_REQUEST, packed at report addr 0x481, re-addressed to the
 // bare FlexRay slot 0x48 on the wire) is angle controlled and gated: REVERSING_ASSIST
-// must always be zero and STEER_ANGLE_REQUEST is rate/accel limited (bmw_steer_angle_checks).
+// must always be zero, STEER_ANGLE_REQUEST is rate/accel limited, and
+// STEER_ANGLE_RATE_REQUEST is bounded (bmw_steer_angle_checks).
 //
 // *** Cycle-tagged steering ***
 // Each FlexRay frame carries CYCLE_COUNT, a 0..63 counter that ticks at 200 Hz. Steering
@@ -22,9 +23,9 @@
 // can be sent multiple times with an evolving angle, and the cycle values are NOT monotonic
 // on the wire. The latest received FlexRay cycle gates TX to a bounded lookahead window, so
 // a sender cannot synthesize a full round of steering cycles without bus time advancing. The
-// angle rate limit is computed per steering cycle: each command is limited against the angle
-// committed for the PREVIOUS steering cycle, kept in a small per-cycle history that survives
-// the 64-cycle wrap. No wall-clock timer is used.
+// commanded-angle delta limit is computed per steering cycle: each command is limited against
+// the angle committed for the PREVIOUS steering cycle, kept in a small per-cycle history that
+// survives the 64-cycle wrap. No wall-clock timer is used.
 
 #define BMW_CRUISE_STATE   931U  // RX, stock ACC engaged state
 #define BMW_BRAKE_PEDAL    753U  // RX, brake pedal state
@@ -58,7 +59,7 @@
 #define BMW_FLEXRAY_CYCLES 64
 #define BMW_STEER_CYCLE_MOD 4
 #define BMW_STEER_CYCLE_REM 1
-#define BMW_STEER_CYCLES (BMW_FLEXRAY_CYCLES / BMW_STEER_CYCLE_MOD)
+#define BMW_STEER_CYCLES 16
 #define BMW_CYCLE_HZ 200U
 #define BMW_STEER_TX_FUTURE_WINDOW 8  // accepted future steering cycles from the latest RX cycle
 
@@ -101,10 +102,10 @@ static bool bmw_cycle_in_tx_window(int cycle) {
   return in_window;
 }
 
-// Angle command safety, mirroring steer_angle_cmd_checks_vm but with a cycle-based rate
-// limit reference (the previous steering cycle's committed angle) instead of a single
-// monotonic last value, since BMW frames are cycle-tagged and re-queued out of order. The
-// cycle counter is the clock (200 Hz), so no wall-clock timer is used.
+// Angle command and requested-rate safety, mirroring steer_angle_cmd_checks_vm but with a
+// cycle-based delta reference (the previous steering cycle's committed angle) instead of a
+// single monotonic last value, since BMW frames are cycle-tagged and re-queued out of order.
+// The cycle counter is the clock (200 Hz), so no wall-clock timer is used.
 static bool bmw_steer_angle_checks(int desired_angle, int desired_rate, bool steer_control_enabled, int cycle) {
   static const AngleSteeringLimits limits = {
     .max_angle = 8191,  // 360 deg, matches openpilot STEER_ANGLE_MAX (assumed EPS fault above)
@@ -135,14 +136,15 @@ static bool bmw_steer_angle_checks(int desired_angle, int desired_rate, bool ste
     violation = true;
   }
 
-  // Ensure we can't send frames too far in advance and cycle the bmw_desired_angle_last array in one timestep
+  // Bound TX to the near future so one control step cannot walk a full round of history slots.
   if (valid_cycle && !bmw_cycle_in_tx_window(cycle)) {
     violation = true;
   }
   int slot = valid_cycle ? (cycle / BMW_STEER_CYCLE_MOD) : 0;  // 0..15
 
   if (controls_allowed && steer_control_enabled && valid_cycle) {
-    // rate limit reference: the angle committed for the previous steering cycle (one steering cycle == BMW_STEER_CYCLE_MOD raw cycles == 20 ms at 200 Hz).
+    // Rate limit reference: the angle committed for the previous steering cycle.
+    // One steering cycle is BMW_STEER_CYCLE_MOD raw cycles, or 20 ms at 200 Hz.
     int prev_slot = (slot + BMW_STEER_CYCLES - 1) % BMW_STEER_CYCLES;
     int desired_angle_last_for_cycle = bmw_desired_angle_last[prev_slot];
 
@@ -175,7 +177,7 @@ static bool bmw_steer_angle_checks(int desired_angle, int desired_rate, bool ste
     violation |= safety_max_limit_check(desired_rate, max_desired_rate, -max_desired_rate);
   }
 
-  // Angle should either be 0 or same as current angle while not steering
+  // Inactive steering should track the measured angle and carry zero requested rate.
   if (!steer_control_enabled) {
     const int max_inactive_angle = SAFETY_CLAMP(angle_meas.max, -limits.max_angle, limits.max_angle) + 1;
     const int min_inactive_angle = SAFETY_CLAMP(angle_meas.min, -limits.max_angle, limits.max_angle) - 1;

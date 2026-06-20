@@ -10,7 +10,7 @@ from opendbc.car.bmw.values import (CarControllerParams, BMW_FLEXRAY_CYCLES, BMW
                                     bmw_inject_slot)
 
 # Constant filler that makes the EPS treat the frame as an active steering request.
-# Everything except the angle, rolling counter, FlexRay cycle and checksum is fixed.
+# Everything except the angle, angle rate, rolling counter, FlexRay cycle and checksum is fixed.
 STEER_DEFAULTS = {
   "DIRECTION": 0,
   "LENGTH": BMW_FLEXRAY_WORDS,
@@ -84,12 +84,12 @@ class CarController(CarControllerBase):
 
     # Track the measured angle while disabled (apply_steer_angle_limits_vm returns the
     # measured angle when inactive) so engaging doesn't step away from it and trip the
-    # panda angle rate limit. The panda safety requires STEER_ANGLE_REQUEST to stay close
-    # to the measured angle whenever ACTIVE != 2 (see opendbc/safety/modes/bmw.h).
+    # panda angle rate limit. The panda safety requires inactive steering to track the
+    # measured angle and carry zero requested rate (see opendbc/safety/modes/bmw.h).
     # TODO: bench test that the EPS does not fault on a non-zero inactive angle request.
     values["STEER_ANGLE_REQUEST"] = apply_angle
     # Angle-rate feedforward (deg/s): d(angle)/dt. Zeroed when inactive to match the
-    # stock inactive frame (the panda safety does not check this signal).
+    # stock inactive frame and satisfy panda safety.
     values["STEER_ANGLE_RATE_REQUEST"] = apply_rate if lat_active else 0.0
     values["CYCLE_COUNT"] = cycle & 0x3F
     values["COUNTER"] = counter

@@ -166,7 +166,7 @@ class TestBmwSafety(common.CarSafetyTest):
         self._reset_angle_measurement(0)
         self._reset_speed_measurement(speed + 1)  # safety fudges the speed down by 1 m/s
 
-        # first active frame rate limits from the measured angle (history fallback)
+        # first active frame rate limits from the initialized per-cycle history
         angle = sign * max_delta * 0.5
         self.assertTrue(self._tx(self._angle_cmd_msg(angle, True, cycle=1)))
 
