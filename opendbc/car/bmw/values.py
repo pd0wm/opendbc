@@ -76,6 +76,8 @@ class CarControllerParams:
   # the steering angle is recomputed and re-queued every control frame (100 Hz)
   STEER_STEP = 1
 
+  STEER_DRIVER_ALLOWANCE = 1.0  # Driver intervention threshold, Nm
+
   # How many upcoming valid (cycle % 4 == 1) FlexRay cycles to queue each frame.
   # We re-queue with the freshest angle every frame; the bridge overwrites any
   # still-pending payload for the same target cycle.

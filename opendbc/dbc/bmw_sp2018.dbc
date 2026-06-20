@@ -220,9 +220,9 @@ BO_ 784 STEERING_WHEEL_5: 20 XXX
  SG_ LENGTH : 15|8@0+ (1,0) [0|255] "words" XXX
  SG_ CHECKSUM : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ COUNTER : 27|4@0+ (1,0) [0|15] "" XXX
- SG_ STEERING_TORQUE_1 : 32|12@1+ (1,-2000) [0|255] "" XXX
+ SG_ STEERING_TORQUE_1 : 32|12@1+ (0.005,-10) [0|255] "Nm" XXX
  SG_ NEW_SIGNAL_2 : 80|12@1+ (1,0) [0|65535] "" XXX
- SG_ STEERING_TORQUE_2 : 96|12@1+ (1,-2000) [0|4095] "" XXX
+ SG_ STEERING_TORQUE_2 : 96|12@1+ (0.005,-10) [0|4095] "Nm" XXX
  SG_ NEW_SIGNAL_1 : 115|4@0+ (1,0) [0|15] "" XXX
 
 BO_ 785 STEERING_WHEEL_6: 20 XXX
@@ -493,13 +493,9 @@ CM_ SG_ 0 DUP_DROPPED "Second-side duplicate captures dropped (each frame is see
 CM_ SG_ 0 RING_OVERRUN "Capture DMA ring lapped a chunk before the parser copied it; chunk discarded";
 CM_ SG_ 0 CAN_INIT "MCP2518FD CAN controller (re)initialisations";
 CM_ SG_ 753 BRAKE_PRESSED_1 "This seems to be the most sensitive brake pressed signal";
-CM_ BO_ 931 "CRUISE_STATE: one of the two ACC longitudinal actuation frames (paired with CRUISE_STATE_2 0x480). Carries ACCELERATION_REQUEST plus engage/standstill state. Observed on bus 0 (src=can).";
-CM_ BO_ 1152 "CRUISE_STATE_2: the other ACC longitudinal actuation frame. Carries BRAKE_REQUEST, BRAKE_MODE and engaged-status bits. Together 0x3a3+0x480 fully drive ACC accel/regen, friction brakes and standstill hold.";
 CM_ BO_ 929 "NEW_MSG_3A01: companion frame to CRUISE_STATE (multiplexed engaged-status echo: c01300202a03.. engaged vs 001300202603.. disengaged). No accel/brake command; not needed to actuate ACC.";
 CM_ BO_ 930 "NEW_MSG_3A02: companion frame; payload varies independently of ACC engagement (counter/status). Not a longitudinal actuator.";
-CM_ BO_ 1154 "NEW_MSG_4802: companion to STEER_REQUEST (0x481); carries the steering-family constants (fe17ff13..), not longitudinal ACC.";
-CM_ SG_ 1153 STEER_ANGLE_REQUEST "Steering-wheel angle target. BMW steering resolution = 1/8192 of a full turn per LSB = 360/8192 = 0.0439453 deg (rounded to 0.04395), i.e. 2*pi/8192 = 0.000767 rad. Zero at raw 25000 -> offset = -25000*0.04395 = -1098.75 deg.";
-CM_ SG_ 1153 STEER_ANGLE_RATE_REQUEST "Angle-rate feedforward, = d(STEER_ANGLE_REQUEST)/dt. Scaling = 10x the angle LSB: 10*0.04395 = 0.4395 deg/s per LSB (= 10 * 2*pi/8192 rad/s). Zero at raw 32766 -> offset = -32766*0.4395 = -14400.657 deg/s.";
+CM_ BO_ 931 "CRUISE_STATE: one of the two ACC longitudinal actuation frames (paired with CRUISE_STATE_2 0x480). Carries ACCELERATION_REQUEST plus engage/standstill state. Observed on bus 0 (src=can).";
 CM_ SG_ 931 ACCELERATION_REQUEST "Powertrain (engine/regen) longitudinal accel target. Neutral/0 m/s2 at raw 32000 (empirical zero ~32030); factor 0.0015 m/s2/count fitted vs aEgo in steady cruise/launch (r>0.99). Held at 0 during standstill hold (CRUISE_ENGAGED_3==3). Not the same scaling as KINEMATICS_4.ACCELERATION (0.0025).";
 CM_ SG_ 931 CRUISE_ENGAGED_2 "Pre-enable maybe";
 CM_ SG_ 931 CRUISE_ENGAGED_3 "Inverse of CRUISE_ENGAGED_1, also 3 at standstill. ==3 while engaged is the standstill-HOLD state: ACCELERATION_REQUEST forced 0, CRUISE_STATE_2.BRAKE_MODE==2 and BRAKE_REQUEST clamped to the hold value (raw ~31196, ~-1.2 m/s2). Goes 3->0 on launch/release.";
@@ -510,10 +506,14 @@ CM_ SG_ 1088 TORQUE_MODE "2 when active, msotly 14 otherise";
 CM_ SG_ 1088 TORQUE_MODE_CPY "mirror of TORQUE_MODE";
 CM_ SG_ 1088 LKA_STATE "Ramp from 0-14 on engage/disengage. 5-9 otherwise";
 CM_ SG_ 1088 TORQUE_REQUEST_3 "Only 1 while not ramping up/down";
+CM_ BO_ 1152 "CRUISE_STATE_2: the other ACC longitudinal actuation frame. Carries BRAKE_REQUEST, BRAKE_MODE and engaged-status bits. Together 0x3a3+0x480 fully drive ACC accel/regen, friction brakes and standstill hold.";
 CM_ SG_ 1152 BRAKE_REQUEST "Friction-brake deceleration target. Neutral (no brake) at raw 32000; lower raw = harder braking. Encoded like ACCELERATION_REQUEST (factor 0.0015 m/s2/count, offset -48) so it reads in m/s2; only meaningful when BRAKE_MODE==2. Standstill hold sits at raw ~31196 (~-1.2 m/s2). BRAKE_REQUEST and ACCELERATION_REQUEST do NOT add: in BRAKE_MODE==2 the two are a coordinated split of one decel target across two actuators with a speed-dependent cross-fade (regen/ACCELERATION_REQUEST dominant at speed, friction/BRAKE_REQUEST taking over near stop as ACCELERATION_REQUEST fades to 0). Achieved aEgo tracks ~the deeper of the two (the target), not their sum (sum overpredicts ~2.5-3x). To command decel a in the blend region put a in both signals (they are ~equal at the crossover).";
-CM_ SG_ 1152 BRAKE_MODE "Longitudinal actuator select: 1 = engine/regen only (BRAKE_REQUEST neutral at 32000, ACCELERATION_REQUEST carries the command), 2 = friction brakes engaged (hard decel and standstill hold; BRAKE_REQUEST is live).";
 CM_ SG_ 1152 ACC_ENGAGED "ACC engaged flag (was SET_ME_0x4): 4 while engaged (CRUISE_STATE.CRUISE_ENGAGED_1==1) in any sub-mode, 0 when not engaged.";
+CM_ SG_ 1152 BRAKE_MODE "Longitudinal actuator select: 1 = engine/regen only (BRAKE_REQUEST neutral at 32000, ACCELERATION_REQUEST carries the command), 2 = friction brakes engaged (hard decel and standstill hold; BRAKE_REQUEST is live).";
 CM_ SG_ 1152 SET_ME_0xD8 "Not constant: 0xD8 while engaged, 0xC0 (bits 0x18 cleared) when disengaged. Carries engaged status alongside ACC_ENGAGED.";
+CM_ SG_ 1153 STEER_ANGLE_REQUEST "Steering-wheel angle target. BMW steering resolution = 1/8192 of a full turn per LSB = 360/8192 = 0.0439453 deg (rounded to 0.04395), i.e. 2*pi/8192 = 0.000767 rad. Zero at raw 25000 -> offset = -25000*0.04395 = -1098.75 deg.";
+CM_ SG_ 1153 STEER_ANGLE_RATE_REQUEST "Angle-rate feedforward, = d(STEER_ANGLE_REQUEST)/dt. Scaling = 10x the angle LSB: 10*0.04395 = 0.4395 deg/s per LSB (= 10 * 2*pi/8192 rad/s). Zero at raw 32766 -> offset = -32766*0.4395 = -14400.657 deg/s.";
+CM_ BO_ 1154 "NEW_MSG_4802: companion to STEER_REQUEST (0x481); carries the steering-family constants (fe17ff13..), not longitudinal ACC.";
 CM_ SG_ 1489 SET_SPEED "Signal seems to glitch sometimes";
 VAL_ 643 GEAR 2 "N" 4 "D" 5 "R";
 VAL_ 1088 TORQUE_REQUEST_2 1 "INACTIVE" 2 "ACTIVE";
