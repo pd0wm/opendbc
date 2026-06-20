@@ -25,7 +25,6 @@ BMW_FLEXRAY_CYCLES = 64
 BMW_STEER_CYCLE_MOD = 4
 BMW_STEER_CYCLE_REM = 1
 BMW_STEER_TX_FUTURE_WINDOW = 8
-BMW_STEER_TX_PAST_WINDOW = 4
 BMW_CYCLE_HZ = 200
 
 # STEER_ANGLE_REQUEST / STEERING_ANGLE_1 DBC scale (0.04395 deg/LSB)
@@ -51,10 +50,12 @@ class TestBmwSafety(common.CarSafetyTest):
 
   # *** message builders ***
 
-  def _angle_cmd_msg(self, angle: float, active: bool, cycle: int = BMW_STEER_CYCLE_REM, reversing: int = 0):
+  def _angle_cmd_msg(self, angle: float, active: bool, cycle: int = BMW_STEER_CYCLE_REM,
+                     reversing: int = 0, rate: float = 0.):
     # packed from the report-address DBC message, then re-addressed to the bare slot (like the carcontroller)
     values = {
       "STEER_ANGLE_REQUEST": angle,
+      "STEER_ANGLE_RATE_REQUEST": rate,
       "ACTIVE": BMW_STEER_ACTIVE if active else 1,
       "CYCLE_COUNT": cycle,
       "REVERSING_ASSIST": reversing,
@@ -109,9 +110,11 @@ class TestBmwSafety(common.CarSafetyTest):
 
   def _max_angle_delta(self, speed: float) -> float:
     # safety jerk allowance over one steering cycle (BMW_STEER_CYCLE_MOD / 200 Hz = 20 ms)
+    return self._max_angle_rate(speed) * (BMW_STEER_CYCLE_MOD / BMW_CYCLE_HZ)
+
+  def _max_angle_rate(self, speed: float) -> float:
     max_curvature_rate = MAX_LATERAL_JERK / (speed ** 2)
-    max_angle_rate = math.degrees(self.VM.get_steer_from_curvature(max_curvature_rate, speed, 0))
-    return max_angle_rate * (BMW_STEER_CYCLE_MOD / BMW_CYCLE_HZ)
+    return math.degrees(self.VM.get_steer_from_curvature(max_curvature_rate, speed, 0))
 
   def _next_steer_cycles(self, cur: int, n: int):
     cycles = []
@@ -177,6 +180,18 @@ class TestBmwSafety(common.CarSafetyTest):
         angle += sign * max_delta * 2.0
         self.assertFalse(self._tx(self._angle_cmd_msg(angle, True, cycle=1 + 4 * BMW_STEER_CYCLE_MOD)))
 
+  def test_angle_rate_request_limit(self):
+    self._reset_state()
+    self.safety.set_controls_allowed(True)
+    self._reset_angle_measurement(0)
+    self._reset_speed_measurement(12)  # safety fudges the speed down by 1 m/s
+    max_rate = self._max_angle_rate(11)
+
+    for sign in (1, -1):
+      self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, rate=sign * max_rate)))
+      self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, rate=sign * (max_rate + 10))))
+      self.assertFalse(self._tx(self._angle_cmd_msg(0, active=False, rate=sign)))
+
   def test_angle_cmd_when_disabled(self):
     # While not actively steering, the command must track the measured angle, regardless of controls.
     for controls_allowed in (True, False):
@@ -222,15 +237,13 @@ class TestBmwSafety(common.CarSafetyTest):
     for cycle in self._next_steer_cycles(live_cycle, BMW_STEER_TX_FUTURE_WINDOW):
       self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, cycle=cycle)))
 
-    for cycle in self._prev_steer_cycles(live_cycle, BMW_STEER_TX_PAST_WINDOW):
-      self.assertTrue(self._tx(self._angle_cmd_msg(0, active=True, cycle=cycle)))
-
     # The safety window is intentionally wider than the controller's 4-cycle lookahead,
     # but still narrower than a full 16-slot FlexRay steering round.
     outside_future_cycle = self._next_steer_cycles(live_cycle, BMW_STEER_TX_FUTURE_WINDOW + 1)[-1]
-    outside_past_cycle = self._prev_steer_cycles(live_cycle, BMW_STEER_TX_PAST_WINDOW + 1)[-1]
+    outside_past_cycle = self._prev_steer_cycles(live_cycle, 1)[0]
     self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=outside_future_cycle)))
     self.assertFalse(self._tx(self._angle_cmd_msg(0, active=True, cycle=outside_past_cycle)))
+    self.assertTrue(self.safety.get_controls_allowed())
 
   def test_cycle_tx_window_blocks_full_history_replay(self):
     self._reset_state()
@@ -244,8 +257,7 @@ class TestBmwSafety(common.CarSafetyTest):
 
     # An adversarial sender can update only the accepted slots while RX cycle time is
     # parked. It cannot walk all 16 history slots and then wrap the rate reference.
-    accepted_cycles = list(reversed(self._prev_steer_cycles(0, BMW_STEER_TX_PAST_WINDOW)))
-    accepted_cycles += self._next_steer_cycles(0, BMW_STEER_TX_FUTURE_WINDOW)
+    accepted_cycles = self._next_steer_cycles(0, BMW_STEER_TX_FUTURE_WINDOW)
     for cycle in accepted_cycles:
       angle += max_delta * 0.5
       self.assertTrue(self._tx(self._angle_cmd_msg(angle, active=True, cycle=cycle)))

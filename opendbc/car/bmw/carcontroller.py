@@ -2,7 +2,7 @@ from opendbc.can import CANPacker
 from opendbc.car import Bus, DT_CTRL
 from opendbc.car.crc import CRC8J1850, mk_crc8_fun
 from opendbc.car.interfaces import CarControllerBase
-from opendbc.car.lateral import apply_steer_angle_limits_vm
+from opendbc.car.lateral import apply_steer_angle_limits_vm, get_max_angle_rate_vm
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.bmw.values import (CarControllerParams, BMW_FLEXRAY_CYCLES, BMW_STEER_CYCLE_MOD,
                                     BMW_STEER_CYCLE_REM, BMW_FLEXRAY_WORDS, BMW_STEER_CRC_INIT,
@@ -115,6 +115,8 @@ class CarController(CarControllerBase):
     # STEER_ANGLE_RATE_REQUEST feedforward: derivative of the (already rate-limited)
     # commanded angle. Control runs every frame at 100 Hz (STEER_STEP=1) so dt == DT_CTRL.
     apply_rate = (apply_angle - self.apply_angle_last) / DT_CTRL
+    max_apply_rate = get_max_angle_rate_vm(max(CS.out.vEgoRaw, 1.), self.VM, CarControllerParams)
+    apply_rate = max(-max_apply_rate, min(max_apply_rate, apply_rate))
     self.apply_angle_last = apply_angle
 
     # Advance the free-running rolling counter to the current bus cycle: +1 per

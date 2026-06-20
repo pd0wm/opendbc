@@ -49,6 +49,9 @@
 // (raw - 25000) and 1 deg == 1/0.04395 CAN units.
 #define BMW_STEER_ANGLE_OFFSET 25000U
 #define BMW_ANGLE_DEG_TO_CAN (1.0 / 0.04395)
+// STEER_ANGLE_RATE_REQUEST has 0.4395 deg/s per LSB and zero at raw 32766.
+#define BMW_STEER_RATE_OFFSET 32766U
+#define BMW_STEER_RATE_DEG_TO_CAN (1.0f / 0.4395f)
 
 // FlexRay cycle geometry: 64 cycles per round, ticking at 200 Hz. Steering frames live on
 // cycles where cycle % 4 == 1, giving 16 steering cycles per round (one every 20 ms).
@@ -58,7 +61,6 @@
 #define BMW_STEER_CYCLES (BMW_FLEXRAY_CYCLES / BMW_STEER_CYCLE_MOD)
 #define BMW_CYCLE_HZ 200U
 #define BMW_STEER_TX_FUTURE_WINDOW 8  // accepted future steering cycles from the latest RX cycle
-#define BMW_STEER_TX_PAST_WINDOW 4    // accepted stale steering cycles in case TX lags RX
 
 // Per-steering-cycle angle history: the last accepted CAN-scale angle for each of the 16
 // steering cycles in a FlexRay round. Persists across the round wrap so a command can always
@@ -84,16 +86,7 @@ static int bmw_next_steer_cycle(int cycle) {
   return (cycle + delta) % BMW_FLEXRAY_CYCLES;
 }
 
-static int bmw_prev_steer_cycle(int cycle) {
-  int delta = ((cycle % BMW_STEER_CYCLE_MOD) - BMW_STEER_CYCLE_REM + BMW_STEER_CYCLE_MOD) % BMW_STEER_CYCLE_MOD;
-  if (delta == 0) {
-    delta = BMW_STEER_CYCLE_MOD;
-  }
-
-  return (cycle + BMW_FLEXRAY_CYCLES - delta) % BMW_FLEXRAY_CYCLES;
-}
-
-// Allow only a bounded window around the latest RX CYCLE_COUNT.
+// Allow only a bounded future window from the latest RX CYCLE_COUNT.
 static bool bmw_cycle_in_tx_window(int cycle) {
   bool in_window = false;
 
@@ -102,12 +95,6 @@ static bool bmw_cycle_in_tx_window(int cycle) {
     for (int i = 0; (i < BMW_STEER_TX_FUTURE_WINDOW) && !in_window; i++) {
       future_cycle = bmw_next_steer_cycle(future_cycle);
       in_window = cycle == future_cycle;
-    }
-
-    int past_cycle = bmw_rx_cycle_last;
-    for (int i = 0; (i < BMW_STEER_TX_PAST_WINDOW) && !in_window; i++) {
-      past_cycle = bmw_prev_steer_cycle(past_cycle);
-      in_window = cycle == past_cycle;
     }
   }
 
@@ -118,7 +105,7 @@ static bool bmw_cycle_in_tx_window(int cycle) {
 // limit reference (the previous steering cycle's committed angle) instead of a single
 // monotonic last value, since BMW frames are cycle-tagged and re-queued out of order. The
 // cycle counter is the clock (200 Hz), so no wall-clock timer is used.
-static bool bmw_steer_angle_checks(int desired_angle, bool steer_control_enabled, int cycle) {
+static bool bmw_steer_angle_checks(int desired_angle, int desired_rate, bool steer_control_enabled, int cycle) {
   static const AngleSteeringLimits limits = {
     .max_angle = 8191,  // 360 deg, matches openpilot STEER_ANGLE_MAX (assumed EPS fault above)
     .angle_deg_to_can = BMW_ANGLE_DEG_TO_CAN,
@@ -181,6 +168,11 @@ static bool bmw_steer_angle_checks(int desired_angle, bool steer_control_enabled
     const int max_angle_can = (max_angle * limits.angle_deg_to_can) + 1.;
 
     violation |= safety_max_limit_check(desired_angle, max_angle_can, -max_angle_can);
+
+    // *** requested angle rate limit ***
+    const float max_desired_rate_float = (max_angle_rate_sec * BMW_STEER_RATE_DEG_TO_CAN) + 1.0f;
+    const int max_desired_rate = (int)max_desired_rate_float;
+    violation |= safety_max_limit_check(desired_rate, max_desired_rate, -max_desired_rate);
   }
 
   // Angle should either be 0 or same as current angle while not steering
@@ -188,6 +180,7 @@ static bool bmw_steer_angle_checks(int desired_angle, bool steer_control_enabled
     const int max_inactive_angle = SAFETY_CLAMP(angle_meas.max, -limits.max_angle, limits.max_angle) + 1;
     const int min_inactive_angle = SAFETY_CLAMP(angle_meas.min, -limits.max_angle, limits.max_angle) - 1;
     violation |= safety_max_limit_check(desired_angle, max_inactive_angle, min_inactive_angle);
+    violation |= desired_rate != 0;
   }
 
   // No angle control allowed when controls are not allowed
@@ -268,10 +261,13 @@ static bool bmw_tx_hook(const CANPacket_t *msg) {
     // STEER_ANGLE_REQUEST (bits 32-47, little-endian), CAN-scale angle == raw - 25000.
     int desired_angle = ((msg->data[5] << 8) | msg->data[4]) - BMW_STEER_ANGLE_OFFSET;
 
+    // STEER_ANGLE_RATE_REQUEST (bits 48-63, little-endian), CAN-scale rate == raw - 32766.
+    int desired_rate = ((msg->data[7] << 8) | msg->data[6]) - BMW_STEER_RATE_OFFSET;
+
     // CYCLE_COUNT (bits 0-5): the FlexRay cycle this frame is tagged for.
     int cycle = msg->data[0] & 0x3FU;
 
-    if (bmw_steer_angle_checks(desired_angle, steer_active, cycle)) {
+    if (bmw_steer_angle_checks(desired_angle, desired_rate, steer_active, cycle)) {
       tx = false;
     }
 
