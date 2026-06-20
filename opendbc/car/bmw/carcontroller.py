@@ -2,7 +2,7 @@ from opendbc.can import CANPacker
 from opendbc.car import Bus, DT_CTRL
 from opendbc.car.crc import CRC8J1850, mk_crc8_fun
 from opendbc.car.interfaces import CarControllerBase
-from opendbc.car.lateral import apply_steer_angle_limits_vm
+from opendbc.car.lateral import apply_steer_angle_limits_vm, get_max_angle_rate_vm
 from opendbc.car.vehicle_model import VehicleModel
 from opendbc.car.bmw.values import (CarControllerParams, BMW_FLEXRAY_CYCLES, BMW_STEER_CYCLE_MOD,
                                     BMW_STEER_CYCLE_REM, BMW_FLEXRAY_WORDS, BMW_STEER_CRC_INIT,
@@ -10,7 +10,7 @@ from opendbc.car.bmw.values import (CarControllerParams, BMW_FLEXRAY_CYCLES, BMW
                                     bmw_inject_slot)
 
 # Constant filler that makes the EPS treat the frame as an active steering request.
-# Everything except the angle, rolling counter, FlexRay cycle and checksum is fixed.
+# Everything except the angle, angle rate, rolling counter, FlexRay cycle and checksum is fixed.
 STEER_DEFAULTS = {
   "DIRECTION": 0,
   "LENGTH": BMW_FLEXRAY_WORDS,
@@ -82,13 +82,14 @@ class CarController(CarControllerBase):
     if not lat_active:
       values.update(STEER_DISABLED)
 
-    # While disabled, send a zero angle to match the stock inactive frame exactly.
-    # TODO: once panda-side angle safety is in place, send the measured angle here
-    # instead (smooth handoff) and test that the EPS does not fault when sending a
-    # non-zero angle when inactive.
-    values["STEER_ANGLE_REQUEST"] = apply_angle if lat_active else 0.0
+    # Track the measured angle while disabled (apply_steer_angle_limits_vm returns the
+    # measured angle when inactive) so engaging doesn't step away from it and trip the
+    # panda angle rate limit. The panda safety requires inactive steering to track the
+    # measured angle and carry zero requested rate (see opendbc/safety/modes/bmw.h).
+    # TODO: bench test that the EPS does not fault on a non-zero inactive angle request.
+    values["STEER_ANGLE_REQUEST"] = apply_angle
     # Angle-rate feedforward (deg/s): d(angle)/dt. Zeroed when inactive to match the
-    # stock inactive frame.
+    # stock inactive frame and satisfy panda safety.
     values["STEER_ANGLE_RATE_REQUEST"] = apply_rate if lat_active else 0.0
     values["CYCLE_COUNT"] = cycle & 0x3F
     values["COUNTER"] = counter
@@ -114,6 +115,8 @@ class CarController(CarControllerBase):
     # STEER_ANGLE_RATE_REQUEST feedforward: derivative of the (already rate-limited)
     # commanded angle. Control runs every frame at 100 Hz (STEER_STEP=1) so dt == DT_CTRL.
     apply_rate = (apply_angle - self.apply_angle_last) / DT_CTRL
+    max_apply_rate = get_max_angle_rate_vm(max(CS.out.vEgoRaw, 1.), self.VM, CarControllerParams)
+    apply_rate = max(-max_apply_rate, min(max_apply_rate, apply_rate))
     self.apply_angle_last = apply_angle
 
     # Advance the free-running rolling counter to the current bus cycle: +1 per
