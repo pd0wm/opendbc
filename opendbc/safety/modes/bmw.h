@@ -61,7 +61,7 @@
 #define BMW_STEER_CYCLE_REM 1
 #define BMW_STEER_CYCLES 16
 #define BMW_CYCLE_HZ 200U
-#define BMW_STEER_TX_FUTURE_WINDOW 8  // accepted future steering cycles from the latest RX cycle
+#define BMW_STEER_TX_FUTURE_WINDOW 4  // accepted future steering cycles from the latest RX cycle
 
 // Per-steering-cycle angle history: the last accepted CAN-scale angle for each of the 16
 // steering cycles in a FlexRay round. Persists across the round wrap so a command can always
